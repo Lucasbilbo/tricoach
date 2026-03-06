@@ -498,6 +498,46 @@ function renderSidebar() {
 }
 
 // ─── SEND WEEK TO INTERVALS ───
+function buildMarkdownWorkout(day) {
+  const isSwim = day.sport === 'Swim';
+  const steps = day.steps || [];
+  const lines = [day.description || '', ''];
+
+  // Group steps by type for markdown sections
+  let currentSection = '';
+
+  steps.forEach(st => {
+    const sectionMap = {warmup:'Warmup', active:'Main Set', cooldown:'Cooldown', interval:'Main Set'};
+    const section = sectionMap[st.type] || 'Main Set';
+
+    if (section !== currentSection) {
+      if (st.type === 'interval') {
+        lines.push(`${section} ${st.reps}x`);
+      } else {
+        lines.push(section);
+      }
+      currentSection = section;
+    }
+
+    if (st.type === 'interval') {
+      if (isSwim && st.distance_m) {
+        lines.push(`- ${st.distance_m}mtr Z${st.on_zone} - ${st.desc||''}`);
+        if (st.rest_sec) lines.push(`- ${st.rest_sec}s Rest`);
+        else if (st.rest_m) lines.push(`- ${st.rest_m}mtr Rest`);
+      } else {
+        lines.push(`- ${st.on_min}m Z${st.on_zone} - ${st.desc||''}`);
+        lines.push(`- ${st.off_min}m Z${st.off_zone||1} - Recuperación`);
+      }
+    } else if (isSwim && st.distance_m) {
+      lines.push(`- ${st.distance_m}mtr Z${st.zone||2} - ${st.desc||''}`);
+    } else {
+      lines.push(`- ${st.duration_min||10}m Z${st.zone||2} - ${st.desc||''}`);
+    }
+  });
+
+  return lines.join('\n');
+}
+
 async function sendWeekToIntervals() {
   const btn = document.getElementById('sendWeekBtn');
   const statusEl = document.getElementById('weekStatus');
@@ -512,21 +552,17 @@ async function sendWeekToIntervals() {
   let sent = 0, failed = 0;
 
   for (const day of workouts) {
+    const markdown = buildMarkdownWorkout(day);
     const steps = buildSteps(day.steps, day.sport);
-    const totalSecs = steps.reduce((s,st)=>s+st.duration,0);
-
-    const desc = day.description + '\n\n' + day.steps.map(st => {
-      if (st.type==='interval') return `${st.reps}x ${st.on_min}min Z${st.on_zone} / ${st.off_min}min Z${st.off_zone} — ${st.desc||''}`;
-      return `${st.duration_min}min Z${st.zone} — ${st.desc||''}`;
-    }).join('\n');
+    const totalSecs = steps.reduce((s,st)=>s+(st.duration||0),0);
 
     const payload = {
       start_date_local: day.date + 'T07:00:00',
       type: day.sport,
       name: day.day + ' — ' + day.name,
-      description: desc.trim(),
+      description: markdown,
       moving_time: totalSecs,
-      category: 'WORKOUT', workout_doc: { type: day.sport, steps }
+      category: 'WORKOUT'
     };
 
     try {
