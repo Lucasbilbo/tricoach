@@ -522,7 +522,9 @@ function buildMarkdownWorkout(day) {
   let i = 0;
   while (i < steps.length) {
     const st = steps[i];
-    const desc = st.desc || '';
+    const rawDesc = st.desc || '';
+    // Limpia referencias a metros/km del desc para no duplicar
+    const desc = rawDesc.replace(/\d+m\s*/gi, '').replace(/\d+\.?\d*km\s*/gi, '').replace(/Z\d+\s*/g, '').trim();
 
     if (st.type === 'warmup') {
       lines.push('Warmup');
@@ -651,7 +653,9 @@ function buildSteps(steps, sport) {
   const result = [];
 
   (steps||[]).forEach(st => {
-    const desc = st.desc || '';
+    const rawDesc = st.desc || '';
+    // Limpia referencias a metros/km del desc para no duplicar
+    const desc = rawDesc.replace(/\d+m\s*/gi, '').replace(/\d+\.?\d*km\s*/gi, '').replace(/Z\d+\s*/g, '').trim();
     const intensity = intensityMap[st.type] || 'ACTIVE';
 
     if (st.type === 'interval') {
