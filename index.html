@@ -567,35 +567,35 @@ function buildSteps(steps, sport) {
   const isSwim = sport === 'Swim';
 
   (steps||[]).forEach(st => {
+    const desc = st.desc || '';
     if (st.type==='interval') {
       if (isSwim && st.distance_m) {
-        // Swim interval with distance
         for (let i=0;i<(st.reps||1);i++) {
           result.push({
             distance: st.distance_m,
             rpe: rpe[st.on_zone||4]||7,
             type: 'ACTIVE',
-            intensity: 'ACTIVE'
+            intensity: 'ACTIVE',
+            description: `Rep ${i+1}/${st.reps} — ${desc}`
           });
           if (st.rest_m) {
-            result.push({distance: st.rest_m, rpe:1, type:'REST', intensity:'RECOVERY'});
+            result.push({distance: st.rest_m, rpe:1, type:'REST', intensity:'RECOVERY', description:'Descanso'});
           } else if (st.rest_sec) {
-            result.push({duration: st.rest_sec, rpe:1, type:'REST', intensity:'RECOVERY'});
+            result.push({duration: st.rest_sec, rpe:1, type:'REST', intensity:'RECOVERY', description:`Descanso ${st.rest_sec}s`});
           }
         }
       } else {
         for (let i=0;i<(st.reps||1);i++) {
-          result.push({duration:(st.on_min||4)*60, rpe:rpe[st.on_zone||4]||7, type:'ACTIVE', intensity:'ACTIVE'});
-          result.push({duration:(st.off_min||2)*60, rpe:rpe[st.off_zone||1]||1, type:'REST', intensity:'RECOVERY'});
+          result.push({duration:(st.on_min||4)*60, rpe:rpe[st.on_zone||4]||7, type:'ACTIVE', intensity:'ACTIVE', description:`Serie ${i+1}/${st.reps} — ${desc}`});
+          result.push({duration:(st.off_min||2)*60, rpe:rpe[st.off_zone||1]||1, type:'REST', intensity:'RECOVERY', description:'Recuperación'});
         }
       }
     } else if (isSwim && st.distance_m) {
-      // Swim step with distance
       const t = typeMap[st.type]||'ACTIVE';
-      result.push({distance: st.distance_m, rpe:rpe[st.zone||2]||3, type:t, intensity:t});
+      result.push({distance: st.distance_m, rpe:rpe[st.zone||2]||3, type:t, intensity:t, description:desc});
     } else {
       const t = typeMap[st.type]||'ACTIVE';
-      result.push({duration:(st.duration_min||10)*60, rpe:rpe[st.zone||2]||3, type:t, intensity:t});
+      result.push({duration:(st.duration_min||10)*60, rpe:rpe[st.zone||2]||3, type:t, intensity:t, description:desc});
     }
   });
   return result;
