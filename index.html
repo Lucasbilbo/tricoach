@@ -335,7 +335,9 @@ function buildSystem() {
   const today = new Date();
   const todaySpain = new Date(today.toLocaleString('en-US', {timeZone: 'Europe/Madrid'}));
   const monday = new Date(todaySpain);
-  monday.setDate(todaySpain.getDate() - todaySpain.getDay() + 1);
+  const dow = todaySpain.getDay();
+  const daysToMonday = dow === 0 ? 1 : (dow <= 3 ? 1 - dow : 8 - dow);
+  monday.setDate(todaySpain.getDate() + daysToMonday);
   const todayStr = todaySpain.toISOString().slice(0,10);
   const dayNames = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
   const todayName = dayNames[todaySpain.getDay()];
