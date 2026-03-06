@@ -266,9 +266,9 @@ textarea.json-in {
     <div class="logo-tag">+ Intervals.icu + Garmin</div>
   </div>
   <div class="header-right">
-    <button class="hbtn hbtn-strava" onclick="openModal('stravaModal')">
+    <button class="hbtn hbtn-strava" onclick="openModal('stravaModal')" id="stravaBtn" title="">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.599h4.172L10.463 0l-7 13.828h4.169"/></svg>
-      Strava
+      <span id="stravaLabel">Strava</span>
     </button>
     <div class="mem-pill">
       <div class="mem-dot"></div>
@@ -422,6 +422,16 @@ async function loadStravaAuto() {
       localStorage.setItem(ACT_KEY, JSON.stringify(activities));
       updateMemLabel();
       console.log(`✅ Strava: ${data.length} actividades cargadas`);
+      // Actualizar indicador
+      const now = new Date();
+      const hm = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+      // Actividades últimos 7 días
+      const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 7);
+      const recent = data.filter(a => new Date(a.start_date) > cutoff).length;
+      const label = document.getElementById('stravaLabel');
+      const btn = document.getElementById('stravaBtn');
+      if (label) label.textContent = `● ${recent} act.`;
+      if (btn) btn.title = `Última sync: ${hm} · ${data.length} actividades totales`;
     }
   } catch(e) { console.warn('Strava auto-load error:', e); }
 }
