@@ -388,7 +388,7 @@ Reglas JSON:
 - Intervalos running/ciclismo: {"type":"interval","reps":4,"on_min":4,"on_zone":4,"off_min":2,"off_zone":1,"desc":"Z4 fartlek"}
 - Fechas desde ${monday.toISOString().slice(0,10)}, los 7 días Lunes a Domingo completos
 - desc running/ciclismo: texto corto descriptivo (ej: "Calentamiento progresivo", "Z2 continuo", "Z4 tempo")
-- Máximo 200 palabras ANTES del JSON. JSON siempre completo con los 7 días.
+- ANTES del JSON explica el plan día a día en formato claro: "📅 Lunes: Rodaje suave 45min Z2 — adaptación aeróbica". Un línea por día con emoji del deporte (🏊 natación, 🚴 bici, 🏃 running, 😴 descanso). Luego el JSON completo.
 
 REGLAS CRÍTICAS NATACIÓN:
 1. UN SOLO step warmup total: {"type":"warmup","distance_m":400,"zone":1,"desc":"Z1 libre"}
