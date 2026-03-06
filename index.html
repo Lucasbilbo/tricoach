@@ -588,7 +588,7 @@ async function sendWeekToIntervals() {
   statusEl.className = 'week-status';
   statusEl.textContent = '';
 
-  const workouts = weekPlan.filter(d => d.sport && d.steps && d.steps.length > 0);
+  const workouts = weekPlan.filter(d => d.sport);
   let sent = 0, failed = 0;
 
   for (const day of workouts) {
