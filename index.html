@@ -529,7 +529,7 @@ function buildMarkdownWorkout(day) {
       lines.push('Warmup');
       if (isSwim && st.distance_m) {
         const km = (st.distance_m / 1000).toFixed(3).replace(/\.?0+$/, '');
-        lines.push(`- ${desc ? desc + " " : ""}${km}km Z${st.zone||1} intensity=warmup`);
+        lines.push(`- ${desc ? desc + " " : ""}${km}km intensity=warmup`);
       } else {
         lines.push(`- ${desc ? desc + " " : ""}${st.duration_min||10}m Z${st.zone||1} intensity=warmup`);
       }
@@ -540,7 +540,7 @@ function buildMarkdownWorkout(day) {
       if (isSwim && st.distance_m) {
         const km = (st.distance_m / 1000).toFixed(3).replace(/\.?0+$/, '');
         lines.push(`Main Set ${reps}x`);
-        lines.push(`- ${desc ? desc + " " : ""}${km}km Z${st.on_zone||4} intensity=interval`);
+        lines.push(`- ${desc ? desc + " " : ""}${km}km intensity=interval`);
         if (st.rest_sec) lines.push(`- ${st.rest_sec}s intensity=rest`);
         else if (st.rest_m) {
           const rkm = (st.rest_m / 1000).toFixed(3).replace(/\.?0+$/, '');
@@ -557,7 +557,7 @@ function buildMarkdownWorkout(day) {
       lines.push('Main Set');
       if (isSwim && st.distance_m) {
         const km = (st.distance_m / 1000).toFixed(3).replace(/\.?0+$/, '');
-        lines.push(`- ${desc ? desc + " " : ""}${km}km Z${st.zone||2} intensity=interval`);
+        lines.push(`- ${desc ? desc + " " : ""}${km}km intensity=interval`);
       } else {
         lines.push(`- ${desc ? desc + " " : ""}${st.duration_min||20}m Z${st.zone||2} intensity=interval`);
       }
@@ -567,7 +567,7 @@ function buildMarkdownWorkout(day) {
       lines.push('Cooldown');
       if (isSwim && st.distance_m) {
         const km = (st.distance_m / 1000).toFixed(3).replace(/\.?0+$/, '');
-        lines.push(`- ${desc ? desc + " " : ""}${km}km Z${st.zone||1} intensity=cooldown`);
+        lines.push(`- ${desc ? desc + " " : ""}${km}km intensity=cooldown`);
       } else {
         lines.push(`- ${desc ? desc + " " : ""}${st.duration_min||10}m Z${st.zone||1} intensity=cooldown`);
       }
