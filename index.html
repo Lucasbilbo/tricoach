@@ -363,7 +363,7 @@ REGLAS CRÍTICAS NATACIÓN — steps con distance_m, máximo 4 steps por sesión
 2. Trabajo continuo = UN SOLO step active. {"type":"active","distance_m":1200,"zone":2,"desc":"continuo crol"}
 3. Series = UN SOLO step interval. {"type":"interval","reps":4,"distance_m":100,"on_zone":3,"rest_sec":20,"desc":"pull buoy técnico"}
 4. Vuelta calma = UN SOLO step cooldown. {"type":"cooldown","distance_m":400,"zone":1,"desc":"suave espalda"}
-CRÍTICO: el campo "desc" debe ser MUY CORTO (2-4 palabras), SIN metros ni números. Solo el concepto: "pull buoy", "crol técnico", "progresivo", "recuperación".
+CRÍTICO: el campo "desc" debe ser CORTO (3-6 palabras), SIN metros ni números. Formato: "ZONA + MATERIAL". Ejemplos: "Z2 pull buoy", "Z4 palas+pull", "Z1 libre", "Z3 pull buoy", "Z1 aletas". Para intervals añade descanso: "Z3 pull buoy 20s". Siempre incluye zona y material si aplica.
 NUNCA generes múltiples steps del mismo tipo. SIEMPRE un solo step por fase.`;
 
   if (activities.length > 0) {
