@@ -607,21 +607,20 @@ function buildSteps(steps, sport) {
     const intensity = intensityMap[st.type] || 'ACTIVE';
 
     if (st.type === 'interval') {
-      // Grouped repeat step with nested steps
       const innerSteps = [];
       if (isSwim && st.distance_m) {
-        innerSteps.push({ text: desc, distance: st.distance_m, intensity: 'ACTIVE' });
-        if (st.rest_sec) innerSteps.push({ text: 'Descanso', duration: st.rest_sec, intensity: 'REST' });
-        else if (st.rest_m) innerSteps.push({ text: 'Descanso', distance: st.rest_m, intensity: 'REST' });
+        innerSteps.push({ distance: st.distance_m, intensity: 'ACTIVE', description: desc });
+        if (st.rest_sec) innerSteps.push({ duration: st.rest_sec, intensity: 'REST', description: 'Descanso' });
+        else if (st.rest_m) innerSteps.push({ distance: st.rest_m, intensity: 'REST', description: 'Descanso' });
       } else {
-        innerSteps.push({ text: desc, duration: (st.on_min||4)*60, intensity: 'ACTIVE' });
-        innerSteps.push({ text: 'Recuperación', duration: (st.off_min||2)*60, intensity: 'REST' });
+        innerSteps.push({ duration: (st.on_min||4)*60, intensity: 'ACTIVE', description: desc });
+        innerSteps.push({ duration: (st.off_min||2)*60, intensity: 'REST', description: 'Recuperación' });
       }
-      result.push({ text: `${st.reps}x — ${desc}`, reps: st.reps||1, steps: innerSteps });
+      result.push({ reps: st.reps||1, steps: innerSteps });
     } else if (isSwim && st.distance_m) {
-      result.push({ text: desc, distance: st.distance_m, intensity, rpe: rpe[st.zone||2]||3 });
+      result.push({ distance: st.distance_m, intensity, rpe: rpe[st.zone||2]||3, description: desc });
     } else {
-      result.push({ text: desc, duration: (st.duration_min||10)*60, intensity, rpe: rpe[st.zone||2]||3 });
+      result.push({ duration: (st.duration_min||10)*60, intensity, rpe: rpe[st.zone||2]||3, description: desc });
     }
   });
   return result;
