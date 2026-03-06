@@ -501,41 +501,71 @@ function renderSidebar() {
 function buildMarkdownWorkout(day) {
   const isSwim = day.sport === 'Swim';
   const steps = day.steps || [];
-  const lines = [day.description || '', ''];
+  const lines = [];
 
-  // Group steps by type for markdown sections
-  let currentSection = '';
+  const intensityMap = {
+    warmup: 'warmup',
+    active: 'active',
+    cooldown: 'cooldown',
+    interval: 'interval'
+  };
 
-  steps.forEach(st => {
-    const sectionMap = {warmup:'Warmup', active:'Main Set', cooldown:'Cooldown', interval:'Main Set'};
-    const section = sectionMap[st.type] || 'Main Set';
+  // Find interval steps to group them
+  let i = 0;
+  while (i < steps.length) {
+    const st = steps[i];
+    const desc = st.desc || '';
 
-    if (section !== currentSection) {
-      if (st.type === 'interval') {
-        lines.push(`${section} ${st.reps}x`);
-      } else {
-        lines.push(section);
-      }
-      currentSection = section;
-    }
-
-    if (st.type === 'interval') {
+    if (st.type === 'warmup') {
+      lines.push('Warmup');
       if (isSwim && st.distance_m) {
-        lines.push(`- ${st.distance_m}mtr Z${st.on_zone} - ${st.desc||''}`);
-        if (st.rest_sec) lines.push(`- ${st.rest_sec}s Rest`);
-        else if (st.rest_m) lines.push(`- ${st.rest_m}mtr Rest`);
+        const km = (st.distance_m / 1000).toFixed(3).replace(/\.?0+$/, '');
+        lines.push(`- ${km}km Z${st.zone||1} Pace intensity=warmup`);
       } else {
-        lines.push(`- ${st.on_min}m Z${st.on_zone} - ${st.desc||''}`);
-        lines.push(`- ${st.off_min}m Z${st.off_zone||1} - Recuperación`);
+        lines.push(`- ${st.duration_min||10}m Z${st.zone||1} intensity=warmup`);
       }
-    } else if (isSwim && st.distance_m) {
-      lines.push(`- ${st.distance_m}mtr Z${st.zone||2} - ${st.desc||''}`);
-    } else {
-      lines.push(`- ${st.duration_min||10}m Z${st.zone||2} - ${st.desc||''}`);
-    }
-  });
+      lines.push('');
 
-  return lines.join('\n');
+    } else if (st.type === 'interval') {
+      lines.push(`Main Set ${st.reps||1}x`);
+      if (isSwim && st.distance_m) {
+        const km = (st.distance_m / 1000).toFixed(3).replace(/\.?0+$/, '');
+        lines.push(`- ${km}km Z${st.on_zone||4} Pace intensity=interval`);
+        if (st.rest_sec) lines.push(`- ${st.rest_sec}s intensity=rest`);
+        else if (st.rest_m) {
+          const rkm = (st.rest_m / 1000).toFixed(3).replace(/\.?0+$/, '');
+          lines.push(`- ${rkm}km Z1 Pace intensity=rest`);
+        }
+      } else {
+        lines.push(`- ${st.on_min||4}m Z${st.on_zone||4} intensity=interval`);
+        lines.push(`- ${st.off_min||2}m Z${st.off_zone||1} intensity=recovery`);
+      }
+      lines.push('');
+
+    } else if (st.type === 'active') {
+      lines.push('Main Set');
+      if (isSwim && st.distance_m) {
+        const km = (st.distance_m / 1000).toFixed(3).replace(/\.?0+$/, '');
+        lines.push(`- ${km}km Z${st.zone||2} Pace intensity=active`);
+      } else {
+        lines.push(`- ${st.duration_min||20}m Z${st.zone||2} intensity=active`);
+      }
+      lines.push('');
+
+    } else if (st.type === 'cooldown') {
+      lines.push('Cooldown');
+      if (isSwim && st.distance_m) {
+        const km = (st.distance_m / 1000).toFixed(3).replace(/\.?0+$/, '');
+        lines.push(`- ${km}km Z${st.zone||1} Pace intensity=cooldown`);
+      } else {
+        lines.push(`- ${st.duration_min||10}m Z${st.zone||1} intensity=cooldown`);
+      }
+      lines.push('');
+    }
+    i++;
+  }
+
+  return lines.join('\n').trim();
 }
 
 async function sendWeekToIntervals() {
@@ -553,8 +583,10 @@ async function sendWeekToIntervals() {
 
   for (const day of workouts) {
     const markdown = buildMarkdownWorkout(day);
-    const steps = buildSteps(day.steps, day.sport);
-    const totalSecs = steps.reduce((s,st)=>s+(st.duration||0),0);
+    const totalSecs = (day.steps||[]).reduce((s,st) => {
+      if (st.type==='interval') return s + (st.reps||1)*((st.on_min||4)+(st.off_min||2))*60;
+      return s + (st.duration_min||10)*60;
+    }, 0);
 
     const payload = {
       start_date_local: day.date + 'T07:00:00',
@@ -562,7 +594,7 @@ async function sendWeekToIntervals() {
       name: day.day + ' — ' + day.name,
       description: markdown,
       moving_time: totalSecs,
-      category: 'WORKOUT', workout_doc: { type: day.sport, steps: buildSteps(day.steps, day.sport) }
+      category: 'WORKOUT'
     };
 
     try {
