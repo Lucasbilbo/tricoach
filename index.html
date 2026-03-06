@@ -371,6 +371,9 @@ sport debe ser: "Run", "Ride", "Swim" o null para descanso.
 Para intervalos: {"type":"interval","reps":4,"on_min":4,"on_zone":4,"off_min":2,"off_zone":1,"desc":"..."}
 Usa las fechas reales de la semana actual empezando el ${monday.toISOString().slice(0,10)}.
 Incluye los 7 días siempre (Lunes a Domingo).
+
+Para sesiones de natación (Swim), en el campo desc de cada step incluye SIEMPRE el material y metros: por ejemplo "400m crol Z2 — pull buoy + palas" o "8x50m Z4 — aletas" o "200m espalda Z1 — sin material".
+
 Texto máximo 300 palabras + el bloque JSON.`;
 
   if (activities.length > 0) {
@@ -539,7 +542,7 @@ async function sendWeekToIntervals() {
     const payload = {
       start_date_local: day.date + 'T07:00:00',
       type: day.sport,
-      name: day.name,
+      name: day.day + ' — ' + day.name,
       description: desc.trim(),
       moving_time: totalSecs,
       category: 'WORKOUT', workout_doc: { type: day.sport, steps }
@@ -579,15 +582,17 @@ async function sendWeekToIntervals() {
 function buildSteps(steps) {
   const rpe = {1:1,2:3,3:5,4:7,5:9};
   const typeMap = {warmup:'WARMUP',active:'ACTIVE',cooldown:'COOL_DOWN'};
+  const intensityMap = {warmup:'WARMUP',active:'ACTIVE',cooldown:'COOL_DOWN',interval:'ACTIVE'};
   const result = [];
   (steps||[]).forEach(st => {
     if (st.type==='interval') {
       for (let i=0;i<(st.reps||1);i++) {
-        result.push({duration:(st.on_min||4)*60,  rpe:rpe[st.on_zone||4]||7,  type:'ACTIVE'});
-        result.push({duration:(st.off_min||2)*60, rpe:rpe[st.off_zone||1]||1, type:'REST'});
+        result.push({duration:(st.on_min||4)*60, rpe:rpe[st.on_zone||4]||7, type:'ACTIVE', intensity:'ACTIVE'});
+        result.push({duration:(st.off_min||2)*60, rpe:rpe[st.off_zone||1]||1, type:'REST', intensity:'RECOVERY'});
       }
     } else {
-      result.push({duration:(st.duration_min||10)*60, rpe:rpe[st.zone||2]||3, type:typeMap[st.type]||'ACTIVE'});
+      const t = typeMap[st.type]||'ACTIVE';
+      result.push({duration:(st.duration_min||10)*60, rpe:rpe[st.zone||2]||3, type:t, intensity:t});
     }
   });
   return result;
