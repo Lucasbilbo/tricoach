@@ -562,7 +562,7 @@ async function sendWeekToIntervals() {
       name: day.day + ' — ' + day.name,
       description: markdown,
       moving_time: totalSecs,
-      category: 'WORKOUT'
+      category: 'WORKOUT', workout_doc: { type: day.sport, steps: buildSteps(day.steps, day.sport) }
     };
 
     try {
@@ -598,40 +598,30 @@ async function sendWeekToIntervals() {
 
 function buildSteps(steps, sport) {
   const rpe = {1:1,2:3,3:5,4:7,5:9};
-  const typeMap = {warmup:'WARMUP',active:'ACTIVE',cooldown:'COOL_DOWN'};
-  const result = [];
+  const intensityMap = {warmup:'WARMUP', active:'ACTIVE', cooldown:'COOL_DOWN'};
   const isSwim = sport === 'Swim';
+  const result = [];
 
   (steps||[]).forEach(st => {
     const desc = st.desc || '';
-    if (st.type==='interval') {
+    const intensity = intensityMap[st.type] || 'ACTIVE';
+
+    if (st.type === 'interval') {
+      // Grouped repeat step with nested steps
+      const innerSteps = [];
       if (isSwim && st.distance_m) {
-        for (let i=0;i<(st.reps||1);i++) {
-          result.push({
-            distance: st.distance_m,
-            rpe: rpe[st.on_zone||4]||7,
-            type: 'ACTIVE',
-            intensity: 'ACTIVE',
-            description: `Rep ${i+1}/${st.reps} — ${desc}`
-          });
-          if (st.rest_m) {
-            result.push({distance: st.rest_m, rpe:1, type:'REST', intensity:'RECOVERY', description:'Descanso'});
-          } else if (st.rest_sec) {
-            result.push({duration: st.rest_sec, rpe:1, type:'REST', intensity:'RECOVERY', description:`Descanso ${st.rest_sec}s`});
-          }
-        }
+        innerSteps.push({ text: desc, distance: st.distance_m, intensity: 'ACTIVE' });
+        if (st.rest_sec) innerSteps.push({ text: 'Descanso', duration: st.rest_sec, intensity: 'REST' });
+        else if (st.rest_m) innerSteps.push({ text: 'Descanso', distance: st.rest_m, intensity: 'REST' });
       } else {
-        for (let i=0;i<(st.reps||1);i++) {
-          result.push({duration:(st.on_min||4)*60, rpe:rpe[st.on_zone||4]||7, type:'ACTIVE', intensity:'ACTIVE', description:`Serie ${i+1}/${st.reps} — ${desc}`});
-          result.push({duration:(st.off_min||2)*60, rpe:rpe[st.off_zone||1]||1, type:'REST', intensity:'RECOVERY', description:'Recuperación'});
-        }
+        innerSteps.push({ text: desc, duration: (st.on_min||4)*60, intensity: 'ACTIVE' });
+        innerSteps.push({ text: 'Recuperación', duration: (st.off_min||2)*60, intensity: 'REST' });
       }
+      result.push({ text: `${st.reps}x — ${desc}`, reps: st.reps||1, steps: innerSteps });
     } else if (isSwim && st.distance_m) {
-      const t = typeMap[st.type]||'ACTIVE';
-      result.push({distance: st.distance_m, rpe:rpe[st.zone||2]||3, type:t, intensity:t, description:desc});
+      result.push({ text: desc, distance: st.distance_m, intensity, rpe: rpe[st.zone||2]||3 });
     } else {
-      const t = typeMap[st.type]||'ACTIVE';
-      result.push({duration:(st.duration_min||10)*60, rpe:rpe[st.zone||2]||3, type:t, intensity:t, description:desc});
+      result.push({ text: desc, duration: (st.duration_min||10)*60, intensity, rpe: rpe[st.zone||2]||3 });
     }
   });
   return result;
