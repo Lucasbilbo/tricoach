@@ -1,49 +1,62 @@
 const https = require('https');
 
-exports.handler = async (event) => {
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Method Not Allowed' };
-  }
+const ATHLETE_ID = "i524242";
+const INTERVALS_KEY = "2snw5gkbwutghni2cde17itbi";
+const auth = Buffer.from(`API_KEY:${INTERVALS_KEY}`).toString('base64');
 
-  const ATHLETE_ID    = "i524242";
-  const INTERVALS_KEY = "2snw5gkbwutghni2cde17itbi";
-  const auth = Buffer.from(`API_KEY:${INTERVALS_KEY}`).toString('base64');
+const CORS = { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' };
 
-  const body = event.body;
-
+function intervalsRequest(method, path, body) {
   return new Promise((resolve) => {
+    const data = body ? JSON.stringify(body) : null;
     const options = {
       hostname: 'intervals.icu',
-      path: `/api/v1/athlete/${ATHLETE_ID}/events`,
-      method: 'POST',
+      path,
+      method,
       headers: {
-        'Content-Type': 'application/json',
         'Authorization': `Basic ${auth}`,
-        'Content-Length': Buffer.byteLength(body)
+        'Content-Type': 'application/json',
+        ...(data && { 'Content-Length': Buffer.byteLength(data) })
       }
     };
 
     const req = https.request(options, (res) => {
-      let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => {
-        resolve({
-          statusCode: res.statusCode,
-          headers: { 'Access-Control-Allow-Origin': '*' },
-          body: data
-        });
-      });
+      let responseData = '';
+      res.on('data', chunk => responseData += chunk);
+      res.on('end', () => resolve({ status: res.statusCode, body: responseData }));
     });
 
-    req.on('error', (e) => {
-      resolve({
-        statusCode: 500,
-        headers: { 'Access-Control-Allow-Origin': '*' },
-        body: JSON.stringify({ error: e.message })
-      });
-    });
-
-    req.write(body);
+    req.on('error', (e) => resolve({ status: 500, body: JSON.stringify({ error: e.message }) }));
+    if (data) req.write(data);
     req.end();
   });
+}
+
+exports.handler = async (event) => {
+  if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers: CORS, body: '' };
+
+  const params = event.queryStringParameters || {};
+  const action = params.action;
+
+  // GET — listar eventos de una semana
+  if (event.httpMethod === 'GET' && action === 'list') {
+    const { start, end } = params;
+    const res = await intervalsRequest('GET', `/api/v1/athlete/${ATHLETE_ID}/events?oldest=${start}&newest=${end}`);
+    return { statusCode: res.status, headers: CORS, body: res.body };
+  }
+
+  // DELETE — borrar evento por ID
+  if (event.httpMethod === 'DELETE' && action === 'delete') {
+    const { id } = params;
+    const res = await intervalsRequest('DELETE', `/api/v1/athlete/${ATHLETE_ID}/events/${id}`);
+    return { statusCode: res.status, headers: CORS, body: res.body };
+  }
+
+  // POST — crear evento
+  if (event.httpMethod === 'POST') {
+    const res = await intervalsRequest('POST', `/api/v1/athlete/${ATHLETE_ID}/events`, JSON.parse(event.body));
+    return { statusCode: res.status, headers: CORS, body: res.body };
+  }
+
+  return { statusCode: 405, headers: CORS, body: 'Method Not Allowed' };
 };

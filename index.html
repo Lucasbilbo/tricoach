@@ -577,6 +577,9 @@ function renderSidebar() {
     <button class="send-week-btn" id="sendWeekBtn" onclick="sendWeekToIntervals()">
       ⌚ Enviar semana al Garmin
     </button>
+    <button class="send-week-btn" style="background:#c0392b;margin-top:6px;font-size:12px;" onclick="clearWeekFromIntervals()">
+      🗑️ Limpiar semana en Intervals
+    </button>
     <div class="week-status" id="weekStatus"></div>
   </div>`;
 
@@ -654,6 +657,43 @@ function buildMarkdownWorkout(day) {
   }
 
   return lines.join('\n').trim();
+}
+
+async function clearWeekFromIntervals() {
+  const statusEl = document.getElementById('weekStatus');
+  if (!weekPlan.length) return;
+
+  const dates = weekPlan.filter(d => d.sport && d.date).map(d => d.date);
+  if (!dates.length) return;
+
+  const oldest = dates[0];
+  const newest = dates[dates.length - 1];
+
+  statusEl.className = 'week-status';
+  statusEl.textContent = '🗑️ Buscando eventos...';
+
+  try {
+    const res = await fetch(`/.netlify/functions/intervals?action=list&start=${oldest}&end=${newest}`);
+    const events = await res.json();
+
+    if (!Array.isArray(events) || events.length === 0) {
+      statusEl.textContent = 'No hay eventos que borrar';
+      return;
+    }
+
+    let deleted = 0;
+    for (const ev of events) {
+      if (ev.category === 'WORKOUT') {
+        await fetch(`/.netlify/functions/intervals?action=delete&id=${ev.id}`, { method: 'DELETE' });
+        deleted++;
+      }
+    }
+    statusEl.className = 'week-status ok';
+    statusEl.textContent = `✅ ${deleted} eventos borrados`;
+  } catch(e) {
+    statusEl.className = 'week-status error';
+    statusEl.textContent = '❌ Error al limpiar';
+  }
 }
 
 async function sendWeekToIntervals() {
