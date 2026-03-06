@@ -352,10 +352,16 @@ WEEK_PLAN_END
 
 Reglas del JSON:
 - sport: "Run", "Ride", "Swim" o null para descanso
-- Intervalos: {"type":"interval","reps":4,"on_min":4,"on_zone":4,"off_min":2,"off_zone":1,"desc":"..."}
+- Intervalos running/ciclismo: {"type":"interval","reps":4,"on_min":4,"on_zone":4,"off_min":2,"off_zone":1,"desc":"..."}
 - Fechas reales desde el ${monday.toISOString().slice(0,10)}, los 7 días Lunes a Domingo
-- Natación: incluye metros y material en desc: "400m crol Z2 — pull buoy + palas"
-- Texto máximo 200 palabras ANTES del bloque JSON. El JSON debe incluir SIEMPRE los 7 días completos (Lunes a Domingo), nunca lo truncues.`;
+- Texto máximo 200 palabras ANTES del bloque JSON. El JSON debe incluir SIEMPRE los 7 días completos (Lunes a Domingo), nunca lo truncues.
+
+REGLAS CRÍTICAS NATACIÓN — steps con distance_m, máximo 4 steps por sesión:
+1. Calentamiento = UN SOLO step warmup con distancia TOTAL. {"type":"warmup","distance_m":400,"zone":1,"desc":"400m crol+espalda"}
+2. Trabajo continuo = UN SOLO step active con distancia TOTAL. {"type":"active","distance_m":1200,"zone":2,"desc":"1200m continuo Z2"}
+3. Series = UN SOLO step interval agrupado. {"type":"interval","reps":4,"distance_m":100,"on_zone":3,"rest_sec":20,"desc":"4x100m técnico pull buoy"}
+4. Vuelta calma = UN SOLO step cooldown con distancia TOTAL. {"type":"cooldown","distance_m":400,"zone":1,"desc":"400m suave"}
+NUNCA generes múltiples steps warmup, active o cooldown separados. SIEMPRE un solo step por fase.`;
 
   if (activities.length > 0) {
     const sum = activities.slice(0,10).map(a => {
