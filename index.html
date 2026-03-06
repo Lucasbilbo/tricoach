@@ -351,7 +351,7 @@ Reglas del JSON:
 - Intervalos: {"type":"interval","reps":4,"on_min":4,"on_zone":4,"off_min":2,"off_zone":1,"desc":"..."}
 - Fechas reales desde el ${monday.toISOString().slice(0,10)}, los 7 días Lunes a Domingo
 - Natación: incluye metros y material en desc: "400m crol Z2 — pull buoy + palas"
-- Texto máximo 300 palabras ANTES del bloque JSON`;
+- Texto máximo 200 palabras ANTES del bloque JSON. El JSON debe incluir SIEMPRE los 7 días completos (Lunes a Domingo), nunca lo truncues.`;
 
   if (activities.length > 0) {
     const sum = activities.slice(0,10).map(a => {
@@ -648,7 +648,7 @@ async function callAPI(userMsg) {
   const msgs = [...history.filter(m=>m.role), {role:'user',content:userMsg}];
   const r = await fetch(CLAUDE_URL, {
     method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,system:buildSystem(),messages:msgs}),
+    body: JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:3000,system:buildSystem(),messages:msgs}),
   });
   const d = await r.json();
   return d.content?.map(b=>b.text||'').join('') || 'Error al procesar.';
