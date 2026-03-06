@@ -338,43 +338,20 @@ function buildSystem() {
 
   let s = `Eres TriCoach, entrenador experto en triatlón. Hablas español de España, tono motivador y profesional.
 
-REGLA MÁS IMPORTANTE: Cada vez que des un plan de entrenamiento (aunque sea parcial, de 1, 2 o 3 días), SIEMPRE debes terminar tu respuesta con el bloque <WEEK_PLAN> en JSON. SIN EXCEPCIÓN. Si no incluyes el bloque JSON, el atleta no puede enviar el entreno al Garmin y el sistema no funciona. NUNCA respondas un plan sin el bloque JSON al final.
+REGLA CRÍTICA: Cuando des un plan de entrenamiento, SIEMPRE termina tu respuesta con el bloque de datos entre las etiquetas WEEK_PLAN_START y WEEK_PLAN_END. Sin esto el atleta no puede enviar al Garmin.
 
-<WEEK_PLAN>
-[
-  {
-    "day": "Lunes",
-    "date": "YYYY-MM-DD",
-    "sport": "Run",
-    "name": "Nombre corto",
-    "description": "Descripción breve",
-    "duration_min": 45,
-    "steps": [
-      {"type": "warmup", "duration_min": 10, "zone": 1, "desc": "Calentamiento"},
-      {"type": "active", "duration_min": 25, "zone": 2, "desc": "Rodaje aeróbico"},
-      {"type": "cooldown", "duration_min": 10, "zone": 1, "desc": "Vuelta a la calma"}
-    ]
-  },
-  {
-    "day": "Martes",
-    "date": "YYYY-MM-DD",
-    "sport": null,
-    "name": "Descanso",
-    "description": "Día de recuperación",
-    "duration_min": 0,
-    "steps": []
-  }
-]
-</WEEK_PLAN>
+Formato obligatorio al final de cada respuesta con plan:
 
-sport debe ser: "Run", "Ride", "Swim" o null para descanso.
-Para intervalos: {"type":"interval","reps":4,"on_min":4,"on_zone":4,"off_min":2,"off_zone":1,"desc":"..."}
-Usa las fechas reales de la semana actual empezando el ${monday.toISOString().slice(0,10)}.
-Incluye los 7 días siempre (Lunes a Domingo).
+WEEK_PLAN_START
+[{"day":"Lunes","date":"YYYY-MM-DD","sport":"Run","name":"Nombre","description":"Desc","duration_min":45,"steps":[{"type":"warmup","duration_min":10,"zone":1,"desc":"Calentamiento"},{"type":"active","duration_min":25,"zone":2,"desc":"Trabajo"},{"type":"cooldown","duration_min":10,"zone":1,"desc":"Vuelta calma"}]},{"day":"Martes","date":"YYYY-MM-DD","sport":null,"name":"Descanso","description":"Recuperación","duration_min":0,"steps":[]}]
+WEEK_PLAN_END
 
-Para sesiones de natación (Swim), en el campo desc de cada step incluye SIEMPRE el material y metros: por ejemplo "400m crol Z2 — pull buoy + palas" o "8x50m Z4 — aletas" o "200m espalda Z1 — sin material".
-
-Texto máximo 300 palabras + el bloque JSON.`;
+Reglas del JSON:
+- sport: "Run", "Ride", "Swim" o null para descanso
+- Intervalos: {"type":"interval","reps":4,"on_min":4,"on_zone":4,"off_min":2,"off_zone":1,"desc":"..."}
+- Fechas reales desde el ${monday.toISOString().slice(0,10)}, los 7 días Lunes a Domingo
+- Natación: incluye metros y material en desc: "400m crol Z2 — pull buoy + palas"
+- Texto máximo 300 palabras ANTES del bloque JSON`;
 
   if (activities.length > 0) {
     const sum = activities.slice(0,10).map(a => {
@@ -600,12 +577,23 @@ function buildSteps(steps) {
 
 // ─── PARSE WEEK PLAN ───
 function extractWeekPlan(text) {
-  const m = text.match(/<WEEK_PLAN>([\s\S]*?)<\/WEEK_PLAN>/);
-  if (!m) return null;
-  try { return JSON.parse(m[1].trim()); } catch { return null; }
+  // Try new format first
+  const m1 = text.match(/WEEK_PLAN_START([\s\S]*?)WEEK_PLAN_END/);
+  if (m1) { try { return JSON.parse(m1[1].trim()); } catch {} }
+  // Fallback: try old XML tags
+  const m2 = text.match(/<WEEK_PLAN>([\s\S]*?)<\/WEEK_PLAN>/);
+  if (m2) { try { return JSON.parse(m2[1].trim()); } catch {} }
+  // Fallback: try to find raw JSON array in text
+  const m3 = text.match(/\[\s*\{[\s\S]*"day"[\s\S]*\}\s*\]/);
+  if (m3) { try { return JSON.parse(m3[0]); } catch {} }
+  return null;
 }
 function stripWeekPlan(text) {
-  return text.replace(/<WEEK_PLAN>[\s\S]*?<\/WEEK_PLAN>/g,'').trim();
+  return text
+    .replace(/WEEK_PLAN_START[\s\S]*?WEEK_PLAN_END/g,'')
+    .replace(/<WEEK_PLAN>[\s\S]*?<\/WEEK_PLAN>/g,'')
+    .replace(/\[\s*\{[\s\S]*"day"[\s\S]*\}\s*\]/g,'')
+    .trim();
 }
 
 // ─── RENDER TEXT ───
