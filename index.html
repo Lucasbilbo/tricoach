@@ -333,10 +333,14 @@ let history = [], activities = [], weekPlan = [], isLoading = false;
 // ─── SYSTEM PROMPT ───
 function buildSystem() {
   const today = new Date();
-  const monday = new Date(today);
-  monday.setDate(today.getDate() - today.getDay() + 1);
+  const todaySpain = new Date(today.toLocaleString('en-US', {timeZone: 'Europe/Madrid'}));
+  const monday = new Date(todaySpain);
+  monday.setDate(todaySpain.getDate() - todaySpain.getDay() + 1);
+  const todayStr = todaySpain.toISOString().slice(0,10);
+  const dayNames = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const todayName = dayNames[todaySpain.getDay()];
 
-  let s = `Eres TriCoach, entrenador experto en triatlón. Hablas español de España, tono motivador y profesional.
+  let s = `Eres TriCoach, entrenador experto en triatlón. Hablas español de España, tono motivador y profesional. El atleta está en España (zona horaria Europe/Madrid, UTC+1 en invierno y UTC+2 en verano). Usa siempre la fecha y hora española actual para determinar qué día es hoy y no incluyas días que ya hayan pasado. Hoy es ${todayName} ${todayStr}.
 
 REGLA CRÍTICA: Cuando des un plan de entrenamiento, SIEMPRE termina tu respuesta con el bloque de datos entre las etiquetas WEEK_PLAN_START y WEEK_PLAN_END. Sin esto el atleta no puede enviar al Garmin.
 
