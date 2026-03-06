@@ -527,9 +527,10 @@ function buildMarkdownWorkout(day) {
       lines.push('');
 
     } else if (st.type === 'interval') {
-      lines.push(`Main Set ${st.reps||1}x`);
+      const reps = st.reps || 1;
       if (isSwim && st.distance_m) {
         const km = (st.distance_m / 1000).toFixed(3).replace(/\.?0+$/, '');
+        lines.push(`Main Set ${reps}x`);
         lines.push(`- ${km}km Z${st.on_zone||4} Pace intensity=interval`);
         if (st.rest_sec) lines.push(`- ${st.rest_sec}s intensity=rest`);
         else if (st.rest_m) {
@@ -537,6 +538,7 @@ function buildMarkdownWorkout(day) {
           lines.push(`- ${rkm}km Z1 Pace intensity=rest`);
         }
       } else {
+        lines.push(`Main Set ${reps}x`);
         lines.push(`- ${st.on_min||4}m Z${st.on_zone||4} intensity=interval`);
         lines.push(`- ${st.off_min||2}m Z${st.off_zone||1} intensity=recovery`);
       }
@@ -546,9 +548,9 @@ function buildMarkdownWorkout(day) {
       lines.push('Main Set');
       if (isSwim && st.distance_m) {
         const km = (st.distance_m / 1000).toFixed(3).replace(/\.?0+$/, '');
-        lines.push(`- ${km}km Z${st.zone||2} Pace intensity=active`);
+        lines.push(`- ${km}km Z${st.zone||2} Pace intensity=interval`);
       } else {
-        lines.push(`- ${st.duration_min||20}m Z${st.zone||2} intensity=active`);
+        lines.push(`- ${st.duration_min||20}m Z${st.zone||2} intensity=interval`);
       }
       lines.push('');
 
