@@ -410,10 +410,13 @@ REGLAS CRÍTICAS NATACIÓN:
 }
 
 // ─── INIT ───
-function init() {
+async function init() {
   try { history   = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { history = []; }
   try { activities= JSON.parse(localStorage.getItem(ACT_KEY))     || []; } catch { activities = []; }
   try { weekPlan  = JSON.parse(localStorage.getItem(PLAN_KEY))    || []; } catch { weekPlan = []; }
+
+  // Intenta cargar desde GitHub (sobreescribe localStorage si hay datos más recientes)
+  await loadHistoryFromGithub();
   updateMemLabel(); updateMobileBar();
   renderSidebar();
 
@@ -440,9 +443,48 @@ Así funciona:
   }
 }
 
+let historySha = null;
+let savePending = false;
+
 function saveHistory() {
   if (history.length > 40) history = history.slice(-40);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+  // Sync to GitHub (debounced)
+  if (!savePending) {
+    savePending = true;
+    setTimeout(async () => {
+      savePending = false;
+      try {
+        const res = await fetch(HISTORY_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ history, plan: weekPlan, sha: historySha })
+        });
+        const data = await res.json();
+        if (data.sha) historySha = data.sha;
+      } catch(e) { console.warn('GitHub sync error:', e); }
+    }, 3000);
+  }
+}
+
+async function loadHistoryFromGithub() {
+  try {
+    const res = await fetch(HISTORY_URL);
+    const data = await res.json();
+    if (data.sha) historySha = data.sha;
+    if (data.history && data.history.length > 0) {
+      history = data.history;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+    }
+    if (data.plan && data.plan.length > 0) {
+      weekPlan = data.plan;
+      localStorage.setItem(PLAN_KEY, JSON.stringify(weekPlan));
+    }
+    return true;
+  } catch(e) {
+    console.warn('GitHub load error:', e);
+    return false;
+  }
 }
 function updateMobileBar() {
   const bar = document.getElementById('mobileWeekBar');
