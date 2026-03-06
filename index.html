@@ -411,6 +411,20 @@ REGLAS CRÍTICAS NATACIÓN:
 }
 
 // ─── INIT ───
+async function loadStravaAuto() {
+  try {
+    const res = await fetch('/.netlify/functions/strava');
+    if (!res.ok) { console.warn('Strava auto-load failed:', res.status); return; }
+    const data = await res.json();
+    if (Array.isArray(data) && data.length > 0) {
+      activities = data;
+      localStorage.setItem(ACT_KEY, JSON.stringify(activities));
+      updateMemLabel();
+      console.log(`✅ Strava: ${data.length} actividades cargadas`);
+    }
+  } catch(e) { console.warn('Strava auto-load error:', e); }
+}
+
 async function init() {
   try { history   = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { history = []; }
   try { activities= JSON.parse(localStorage.getItem(ACT_KEY))     || []; } catch { activities = []; }
@@ -418,6 +432,8 @@ async function init() {
 
   // Intenta cargar desde GitHub (sobreescribe localStorage si hay datos más recientes)
   await loadHistoryFromGithub();
+  // Carga actividades Strava automáticamente
+  loadStravaAuto();
   updateMemLabel(); updateMobileBar();
   renderSidebar();
 
