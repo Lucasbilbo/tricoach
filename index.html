@@ -512,7 +512,7 @@ async function sendWeekToIntervals() {
   let sent = 0, failed = 0;
 
   for (const day of workouts) {
-    const steps = buildSteps(day.steps);
+    const steps = buildSteps(day.steps, day.sport);
     const totalSecs = steps.reduce((s,st)=>s+st.duration,0);
 
     const desc = day.description + '\n\n' + day.steps.map(st => {
@@ -560,17 +560,39 @@ async function sendWeekToIntervals() {
   }
 }
 
-function buildSteps(steps) {
+function buildSteps(steps, sport) {
   const rpe = {1:1,2:3,3:5,4:7,5:9};
   const typeMap = {warmup:'WARMUP',active:'ACTIVE',cooldown:'COOL_DOWN'};
-  const intensityMap = {warmup:'WARMUP',active:'ACTIVE',cooldown:'COOL_DOWN',interval:'ACTIVE'};
   const result = [];
+  const isSwim = sport === 'Swim';
+
   (steps||[]).forEach(st => {
     if (st.type==='interval') {
-      for (let i=0;i<(st.reps||1);i++) {
-        result.push({duration:(st.on_min||4)*60, rpe:rpe[st.on_zone||4]||7, type:'ACTIVE', intensity:'ACTIVE'});
-        result.push({duration:(st.off_min||2)*60, rpe:rpe[st.off_zone||1]||1, type:'REST', intensity:'RECOVERY'});
+      if (isSwim && st.distance_m) {
+        // Swim interval with distance
+        for (let i=0;i<(st.reps||1);i++) {
+          result.push({
+            distance: st.distance_m,
+            rpe: rpe[st.on_zone||4]||7,
+            type: 'ACTIVE',
+            intensity: 'ACTIVE'
+          });
+          if (st.rest_m) {
+            result.push({distance: st.rest_m, rpe:1, type:'REST', intensity:'RECOVERY'});
+          } else if (st.rest_sec) {
+            result.push({duration: st.rest_sec, rpe:1, type:'REST', intensity:'RECOVERY'});
+          }
+        }
+      } else {
+        for (let i=0;i<(st.reps||1);i++) {
+          result.push({duration:(st.on_min||4)*60, rpe:rpe[st.on_zone||4]||7, type:'ACTIVE', intensity:'ACTIVE'});
+          result.push({duration:(st.off_min||2)*60, rpe:rpe[st.off_zone||1]||1, type:'REST', intensity:'RECOVERY'});
+        }
       }
+    } else if (isSwim && st.distance_m) {
+      // Swim step with distance
+      const t = typeMap[st.type]||'ACTIVE';
+      result.push({distance: st.distance_m, rpe:rpe[st.zone||2]||3, type:t, intensity:t});
     } else {
       const t = typeMap[st.type]||'ACTIVE';
       result.push({duration:(st.duration_min||10)*60, rpe:rpe[st.zone||2]||3, type:t, intensity:t});
