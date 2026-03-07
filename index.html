@@ -31,6 +31,7 @@ header {
   position:relative; z-index:20;
   display:flex; align-items:center; gap:12px;
   padding:11px 20px;
+  padding-top:calc(11px + env(safe-area-inset-top));
   background:rgba(8,12,18,0.92); backdrop-filter:blur(12px);
   border-bottom:1px solid var(--border);
 }
@@ -293,7 +294,7 @@ textarea.json-in {
   .chips{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
   .chips::-webkit-scrollbar{display:none;}
   .chip{white-space:nowrap;padding:6px 12px;font-size:12px;}
-  header{padding:8px 12px;padding-top:max(8px, env(safe-area-inset-top));}
+  header{padding:8px 12px;padding-top:calc(8px + env(safe-area-inset-top));}
   .logo-name{font-size:15px;}
   .logo-tag{display:none;}
   .logo-mark{width:30px;height:30px;font-size:14px;}
@@ -301,7 +302,7 @@ textarea.json-in {
   .chat-col{padding-bottom:100px;}
   .input-area{padding:8px 0 6px;}
   #chat{padding-bottom:4px;}
-  .mobile-nav{padding-bottom:max(16px, env(safe-area-inset-bottom));}
+  .mobile-nav{padding-bottom:calc(16px + env(safe-area-inset-bottom));}
 }
 </style>
 </head>
