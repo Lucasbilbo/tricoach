@@ -982,7 +982,7 @@ function renderStats() {
       const avgPaceSec = w.Run.reduce((s,a)=>s+(a.moving_time||0)/((a.distance||1)/1000),0)/w.Run.length;
       const avgFC = w.Run.filter(a=>a.average_heartrate).reduce((s,a)=>s+a.average_heartrate,0)/Math.max(w.Run.filter(a=>a.average_heartrate).length,1);
       const pm = Math.floor(avgPaceSec/60), ps = Math.round(avgPaceSec%60).toString().padStart(2,'0');
-      const bw = Math.round((1-avgPaceSec/(maxPace*1.1))*100);
+      const bw = Math.max(15, Math.round((1-avgPaceSec/(maxPace*1.05))*100));
       const lbl = w.monday.getDate()+'/'+(w.monday.getMonth()+1);
       return `<div style="margin-bottom:5px"><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:2px"><span>${lbl}</span><span style="color:#69ff87">${pm}:${ps}/km</span><span>FC${Math.round(avgFC)||'—'}</span></div><div style="background:var(--s3);border-radius:3px;height:5px"><div style="background:#69ff87;width:${bw}%;height:5px;border-radius:3px"></div></div></div>`;
     }).join('');
@@ -990,12 +990,12 @@ function renderStats() {
 
   // Ride trend
   const rideTrendHtml = (() => {
-    const wks = trendSorted.filter(w => w.Ride.length > 0);
+    const wks = trendSorted.filter(w => w.Ride.filter(a=>(a.distance||0)>500).length > 0);
     if (wks.length < 2) return '<div style="font-size:11px;color:var(--muted);padding:6px 0">Necesitas más sesiones de bici</div>';
-    const maxSpd = Math.max(...wks.map(w => w.Ride.reduce((s,a)=>s+((a.distance||0)/1000)/((a.moving_time||1)/3600),0)/w.Ride.length));
+    const maxSpd = Math.max(...wks.map(w => { const r=w.Ride.filter(a=>(a.distance||0)>500); return r.reduce((s,a)=>s+((a.distance||0)/1000)/((a.moving_time||1)/3600),0)/r.length; }));
     return wks.map(w => {
-      const avgSpd = w.Ride.reduce((s,a)=>s+((a.distance||0)/1000)/((a.moving_time||1)/3600),0)/w.Ride.length;
-      const avgFC = w.Ride.filter(a=>a.average_heartrate).reduce((s,a)=>s+a.average_heartrate,0)/Math.max(w.Ride.filter(a=>a.average_heartrate).length,1);
+      const rideActs = w.Ride.filter(a=>(a.distance||0)>500); const avgSpd = rideActs.reduce((s,a)=>s+((a.distance||0)/1000)/((a.moving_time||1)/3600),0)/Math.max(rideActs.length,1);
+      const avgFC = rideActs.filter(a=>a.average_heartrate).reduce((s,a)=>s+a.average_heartrate,0)/Math.max(rideActs.filter(a=>a.average_heartrate).length,1);
       const bw = Math.round((avgSpd/maxSpd)*100);
       const lbl = w.monday.getDate()+'/'+(w.monday.getMonth()+1);
       return `<div style="margin-bottom:5px"><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:2px"><span>${lbl}</span><span style="color:#ff6b35">${avgSpd.toFixed(1)}km/h</span><span>FC${Math.round(avgFC)||'—'}</span></div><div style="background:var(--s3);border-radius:3px;height:5px"><div style="background:#ff6b35;width:${bw}%;height:5px;border-radius:3px"></div></div></div>`;
