@@ -3,6 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+<link rel="manifest" href="/manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TriCoach">
+<meta name="theme-color" content="#080c12">
+<link rel="apple-touch-icon" href="/icon-192.png">
 <title>TriCoach AI</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -1202,6 +1209,11 @@ function switchMobileTab(tab) {
   document.getElementById('mobileSidebarContent').style.display = tab==='plan' ? '' : 'none';
   document.getElementById('mobileSidebarStats').style.display = tab==='stats' ? '' : 'none';
   if (tab==='stats') { renderStats(); const s=document.getElementById('mobileSidebarStats'); if(s) s.innerHTML=document.getElementById('statsContent').innerHTML; }
+}
+
+// Register service worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(e => console.warn('SW error:', e));
 }
 
 init();
