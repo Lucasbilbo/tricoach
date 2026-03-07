@@ -364,7 +364,9 @@ textarea.json-in {
     <div class="sb-tabs">
       <div class="sb-tab active" id="tab-plan" onclick="switchTab('plan')">📅 Plan</div>
       <div class="sb-tab" id="tab-stats" onclick="switchTab('stats')">📊 Stats</div>
+      <div class="sb-tab" id="tab-history" onclick="switchTab('history')">📜</div>
     </div>
+    <div class="sb-scroll" id="historyContent" style="display:none"></div>
     <div class="sb-scroll" id="sidebarContent">
       <div class="sb-empty"><div class="ei">📅</div>Cierra el plan semanal con el coach y aparecerá aquí para enviarlo al Garmin</div>
     </div>
@@ -690,7 +692,7 @@ MÁXIMO 4 steps. Un solo step de cada tipo.
       .reduce((s,a) => s + Math.round((a.moving_time||0)/60), 0);
     const volPct = plannedMins > 0 ? Math.round((completedMins/plannedMins)*100) : 0;
 
-    s += `\n\n--- COMPARACIÓN PLAN VS EJECUCIÓN ---\n${planVsReal}\n\nResumen: ${totalCompleted}/${totalPlanned} entrenamientos completados | Volumen: ${completedMins}min realizado vs ${plannedMins}min planificado (${volPct}%)\n\nINSTRUCCIÓN: Usa esta comparación para tu análisis. Si volPct>115% → semana que viene bajar carga. Si volPct<70% → investigar motivo antes de planificar. Si hay días ❌ → preguntar qué pasó.`;
+    s += `\n\n--- COMPARACIÓN PLAN VS EJECUCIÓN ---\n${planVsReal}\n\nResumen: ${totalCompleted}/${totalPlanned} entrenamientos completados | Volumen: ${completedMins}min realizado vs ${plannedMins}min planificado (${volPct}%)\n\nINSTRUCCIÓN: Usa esta comparación para tu análisis. Si volPct>115% → semana que viene bajar carga. Si volPct<70% → investigar motivo antes de planificar. Si hay días ❌ → preguntar qué pasó. Al final del análisis semanal incluye siempre: "Nota de la semana: X/10" siendo honesto y exigente.`;
   }
 
   return s;
@@ -701,9 +703,44 @@ MÁXIMO 4 steps. Un solo step de cada tipo.
 function switchTab(tab) {
   document.getElementById('tab-plan').classList.toggle('active', tab === 'plan');
   document.getElementById('tab-stats').classList.toggle('active', tab === 'stats');
+  document.getElementById('tab-history').classList.toggle('active', tab === 'history');
   document.getElementById('sidebarContent').style.display = tab === 'plan' ? '' : 'none';
+  document.getElementById('historyContent').style.display = tab === 'history' ? '' : 'none';
   document.getElementById('statsContent').style.display = tab === 'stats' ? '' : 'none';
   if (tab === 'stats') renderStats();
+  if (tab === 'history') renderHistory();
+}
+
+function renderHistory() {
+  const el = document.getElementById('historyContent');
+  if (!weekHistory || weekHistory.length === 0) {
+    el.innerHTML = '<div class="sb-empty"><div class="ei">📜</div>El historial de semanas aparecerá aquí automáticamente</div>';
+    return;
+  }
+  const SPORT_EMOJI = { Swim: '🏊', Ride: '🚴', Run: '🏃', WeightTraining: '💪' };
+  const sorted = [...weekHistory].sort((a,b) => b.week.localeCompare(a.week));
+  const html = sorted.map(w => {
+    const workouts = (w.plan||[]).filter(d => d.sport);
+    const totalMins = workouts.reduce((s,d) => s+(d.duration_min||0), 0);
+    const scoreHtml = w.score ? `<span style="background:${w.score>=8?'rgba(105,255,135,0.2)':w.score>=6?'rgba(255,183,77,0.2)':'rgba(255,68,68,0.2)';};color:${w.score>=8?'#69ff87':w.score>=6?'#ffb74d':'#ff4444'};border-radius:6px;padding:2px 8px;font-size:12px;font-weight:700">${w.score}/10</span>` : '';
+    const daysHtml = workouts.map(d =>
+      `<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:11px;border-bottom:1px solid rgba(255,255,255,0.04)">
+        <span style="color:var(--muted)">${d.day?.slice(0,3)||''}</span>
+        <span style="color:${SPORT_EMOJI[d.sport]?'var(--text)':'var(--muted)'};">${SPORT_EMOJI[d.sport]||'•'} ${d.name||d.sport||''}</span>
+        <span style="color:var(--muted)">${d.duration_min||''}min</span>
+      </div>`
+    ).join('');
+    return `<div style="background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:12px;font-weight:700;color:var(--cyan)">${w.dateRange||w.week}</span>
+        ${scoreHtml}
+      </div>
+      ${w.summary ? `<div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5">${w.summary.slice(0,120)}${w.summary.length>120?'...':''}</div>` : ''}
+      <div style="margin-bottom:4px;font-size:11px;color:var(--muted)">${workouts.length} entrenos · ${totalMins}min</div>
+      ${daysHtml}
+    </div>`;
+  }).join('');
+  el.innerHTML = `<div style="padding:10px">${html}</div>`;
 }
 
 function renderStats() {
@@ -992,6 +1029,7 @@ function analyzeNewActs(actsStr) {
 let historySha = null;
 let savePending = false;
 let weeklyMemory = []; // [{week, summary, fatigue, injuries, highlights}]
+let weekHistory = []; // [{week, dateRange, plan, summary, score}]
 
 function saveHistory() {
   if (history.length > 40) history = history.slice(-40);
@@ -1005,7 +1043,7 @@ function saveHistory() {
         const res = await fetch(HISTORY_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ history, plan: weekPlan, memory: weeklyMemory, sha: historySha })
+          body: JSON.stringify({ history, plan: weekPlan, memory: weeklyMemory, weekHistory, sha: historySha })
         });
         const data = await res.json();
         if (data.sha) historySha = data.sha;
@@ -1029,6 +1067,9 @@ async function loadHistoryFromGithub() {
     }
     if (data.memory && data.memory.length > 0) {
       weeklyMemory = data.memory;
+    }
+    if (data.weekHistory && data.weekHistory.length > 0) {
+      weekHistory = data.weekHistory;
     }
     return true;
   } catch(e) {
@@ -1342,6 +1383,24 @@ function saveWeekMemory(summary, fatigue, injuries, highlights) {
 }
 
 // Auto-extract memory from coach responses
+function saveWeekToHistory(plan, summary, score) {
+  if (!plan || plan.length === 0) return;
+  const now = new Date();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - ((now.getDay()+6)%7));
+  const sunday = new Date(monday.getTime() + 6*24*3600*1000);
+  const fmt = d => `${d.getDate()}/${d.getMonth()+1}`;
+  const weekKey = monday.toISOString().slice(0,10);
+  const dateRange = `${fmt(monday)} - ${fmt(sunday)}`;
+
+  const idx = weekHistory.findIndex(w => w.week === weekKey);
+  const entry = { week: weekKey, dateRange, plan: JSON.parse(JSON.stringify(plan)), summary: summary||'', score: score||null };
+  if (idx >= 0) weekHistory[idx] = entry;
+  else weekHistory.push(entry);
+  if (weekHistory.length > 16) weekHistory = weekHistory.slice(-16);
+  saveHistory();
+}
+
 function extractAndSaveMemory(coachText) {
   // Look for week summary patterns in coach response
   const hasSummary = coachText.includes('semana') && (coachText.includes('✅') || coachText.includes('cumpliste') || coachText.includes('completaste'));
@@ -1356,7 +1415,13 @@ function extractAndSaveMemory(coachText) {
   const lines = coachText.split('\n').filter(l => l.includes('✅') || l.includes('❌') || l.includes('CONCLUSIÓN'));
   const summary = lines.slice(0,3).join(' ').slice(0,150);
   
-  if (summary.length > 20) saveWeekMemory(summary, fatigue, injury, highlight);
+  if (summary.length > 20) {
+    // Extract score if present
+    const scoreMatch = coachText.match(/nota[:\s]+(\d+)[\/\s]*10|(\d+)[\/\s]*10\s*(?:puntos|estrellas)?/i);
+    const score = scoreMatch ? parseInt(scoreMatch[1]||scoreMatch[2]) : null;
+    saveWeekMemory(summary, fatigue, injury, highlight);
+    if (weekPlan && weekPlan.length > 0) saveWeekToHistory(weekPlan, summary, score);
+  }
 }
 
 function syncMobileSidebar() {
