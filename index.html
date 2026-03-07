@@ -722,7 +722,9 @@ function renderHistory() {
   const html = sorted.map(w => {
     const workouts = (w.plan||[]).filter(d => d.sport);
     const totalMins = workouts.reduce((s,d) => s+(d.duration_min||0), 0);
-    const scoreHtml = w.score ? `<span style="background:${w.score>=8?'rgba(105,255,135,0.2)':w.score>=6?'rgba(255,183,77,0.2)':'rgba(255,68,68,0.2)';};color:${w.score>=8?'#69ff87':w.score>=6?'#ffb74d':'#ff4444'};border-radius:6px;padding:2px 8px;font-size:12px;font-weight:700">${w.score}/10</span>` : '';
+    const scoreBg = w.score>=8?'rgba(105,255,135,0.2)':w.score>=6?'rgba(255,183,77,0.2)':'rgba(255,68,68,0.2)';
+    const scoreColor = w.score>=8?'#69ff87':w.score>=6?'#ffb74d':'#ff4444';
+    const scoreHtml = w.score ? `<span style="background:${scoreBg};color:${scoreColor};border-radius:6px;padding:2px 8px;font-size:12px;font-weight:700">${w.score}/10</span>` : '';
     const daysHtml = workouts.map(d =>
       `<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:11px;border-bottom:1px solid rgba(255,255,255,0.04)">
         <span style="color:var(--muted)">${d.day?.slice(0,3)||''}</span>
