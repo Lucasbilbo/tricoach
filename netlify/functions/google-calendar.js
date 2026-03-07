@@ -68,42 +68,63 @@ exports.handler = async (event) => {
   }
 
   try {
-    // Get next 14 days of events
     const now = new Date();
     const twoWeeks = new Date(now.getTime() + 14 * 24 * 3600 * 1000);
     const timeMin = now.toISOString();
     const timeMax = twoWeeks.toISOString();
 
-    const url = `https://www.googleapis.com/calendar/v3/calendars/primary/events?` +
-      `timeMin=${encodeURIComponent(timeMin)}` +
-      `&timeMax=${encodeURIComponent(timeMax)}` +
-      `&singleEvents=true` +
-      `&orderBy=startTime` +
-      `&maxResults=50` +
-      `&fields=items(summary,start,end,status)`;
+    // 1. Get all calendars
+    const calListUrl = `https://www.googleapis.com/calendar/v3/users/me/calendarList?fields=items(id,summary,accessRole)`;
+    let calList = await get(calListUrl, token);
 
-    const data = await get(url, token);
-
-    if (data.error) {
-      // Token might be expired, try refresh
-      if (data.error.code === 401 && refresh_token) {
-        const refreshed = await refreshAccessToken(refresh_token);
-        if (!refreshed.error) {
-          const retryData = await get(url, refreshed.access_token);
-          return {
-            statusCode: 200,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ events: retryData.items || [], new_access_token: refreshed.access_token })
-          };
-        }
+    // Handle token expiry
+    if (calList.error && calList.error.code === 401 && refresh_token) {
+      const refreshed = await refreshAccessToken(refresh_token);
+      if (!refreshed.error) {
+        token = refreshed.access_token;
+        calList = await get(calListUrl, token);
       }
-      return { statusCode: 401, body: JSON.stringify({ error: data.error.message }) };
     }
+    if (calList.error) return { statusCode: 401, body: JSON.stringify({ error: calList.error.message }) };
+
+    const calendars = calList.items || [];
+
+    // 2. Fetch events from all calendars in parallel
+    const allEvents = [];
+    await Promise.all(calendars.map(async cal => {
+      try {
+        const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(cal.id)}/events?` +
+          `timeMin=${encodeURIComponent(timeMin)}` +
+          `&timeMax=${encodeURIComponent(timeMax)}` +
+          `&singleEvents=true` +
+          `&orderBy=startTime` +
+          `&maxResults=30` +
+          `&fields=items(summary,start,end,status)`;
+        const data = await get(url, token);
+        if (data.items) {
+          data.items.forEach(e => {
+            // For restricted calendars only show busy blocks
+            if (cal.accessRole === 'freeBusyReader') {
+              allEvents.push({ summary: `[${cal.summary||'Ocupado'}]`, start: e.start, end: e.end });
+            } else {
+              allEvents.push(e);
+            }
+          });
+        }
+      } catch(e) { /* skip calendar on error */ }
+    }));
+
+    // Sort by start time
+    allEvents.sort((a, b) => {
+      const aTime = a.start?.dateTime || a.start?.date || '';
+      const bTime = b.start?.dateTime || b.start?.date || '';
+      return aTime.localeCompare(bTime);
+    });
 
     return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ events: data.items || [] })
+      body: JSON.stringify({ events: allEvents, new_access_token: token !== access_token ? token : undefined })
     };
   } catch (e) {
     return { statusCode: 500, body: JSON.stringify({ error: e.message }) };
