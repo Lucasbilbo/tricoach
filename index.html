@@ -714,34 +714,64 @@ function switchTab(tab) {
 function renderHistory() {
   const el = document.getElementById('historyContent');
   if (!weekHistory || weekHistory.length === 0) {
-    el.innerHTML = '<div class="sb-empty"><div class="ei">📜</div>El historial de semanas aparecerá aquí automáticamente</div>';
+    el.innerHTML = '<div class="sb-empty"><div class="ei">📜</div>El historial aparecerá aquí a partir de esta semana</div>';
     return;
   }
-  const SPORT_EMOJI = { Swim: '🏊', Ride: '🚴', Run: '🏃', WeightTraining: '💪' };
+  const SPORT_EMOJI = { Swim:'🏊', Ride:'🚴', Run:'🏃', WeightTraining:'💪', VirtualRide:'🚴', VirtualRun:'🏃' };
   const sorted = [...weekHistory].sort((a,b) => b.week.localeCompare(a.week));
+
   const html = sorted.map(w => {
-    const workouts = (w.plan||[]).filter(d => d.sport);
-    const totalMins = workouts.reduce((s,d) => s+(d.duration_min||0), 0);
+    const plan = (w.plan||[]).filter(d => d.sport);
+    const planMins = plan.reduce((s,d) => s+(d.duration_min||0), 0);
+    const planDates = plan.map(d => d.date).filter(Boolean);
+
+    // Match Strava activities to this week
+    const weekStart = new Date(w.week+'T00:00:00');
+    const weekEnd = new Date(weekStart.getTime() + 7*24*3600*1000);
+    const weekActs = (activities||[]).filter(a => {
+      const d = new Date(a.start_date||'');
+      return d >= weekStart && d < weekEnd;
+    });
+    const doneMins = weekActs.reduce((s,a) => s+Math.round((a.moving_time||0)/60), 0);
+    const pct = planMins > 0 ? Math.round((doneMins/planMins)*100) : 0;
+    const pctColor = pct>=90?'#69ff87':pct>=70?'#ffb74d':'#ff4444';
+
+    // Score
     const scoreBg = w.score>=8?'rgba(105,255,135,0.2)':w.score>=6?'rgba(255,183,77,0.2)':'rgba(255,68,68,0.2)';
     const scoreColor = w.score>=8?'#69ff87':w.score>=6?'#ffb74d':'#ff4444';
-    const scoreHtml = w.score ? `<span style="background:${scoreBg};color:${scoreColor};border-radius:6px;padding:2px 8px;font-size:12px;font-weight:700">${w.score}/10</span>` : '';
-    const daysHtml = workouts.map(d =>
-      `<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:11px;border-bottom:1px solid rgba(255,255,255,0.04)">
-        <span style="color:var(--muted)">${d.day?.slice(0,3)||''}</span>
-        <span style="color:${SPORT_EMOJI[d.sport]?'var(--text)':'var(--muted)'};">${SPORT_EMOJI[d.sport]||'•'} ${d.name||d.sport||''}</span>
-        <span style="color:var(--muted)">${d.duration_min||''}min</span>
-      </div>`
-    ).join('');
+    const scoreHtml = w.score ? `<span style="background:${scoreBg};color:${scoreColor};border-radius:6px;padding:2px 7px;font-size:11px;font-weight:700">${w.score}/10</span>` : '';
+
+    // Day rows: plan vs real
+    const daysHtml = plan.map(d => {
+      const dayActs = weekActs.filter(a => (a.start_date||'').slice(0,10) === d.date);
+      const done = dayActs.length > 0;
+      const actStr = dayActs.map(a => {
+        const dist = a.distance?(a.distance/1000).toFixed(1)+'km':'';
+        const mins = a.moving_time?Math.round(a.moving_time/60)+'min':'';
+        return [dist,mins].filter(Boolean).join(' ');
+      }).join(', ');
+      const statusIcon = done ? '✅' : (new Date(d.date+'T23:59:59') < new Date() ? '❌' : '⏳');
+      return `<div style="display:grid;grid-template-columns:24px 1fr 1fr;gap:4px;padding:4px 0;font-size:11px;border-bottom:1px solid rgba(255,255,255,0.04);align-items:center">
+        <span>${statusIcon}</span>
+        <span style="color:var(--muted)">${SPORT_EMOJI[d.sport]||'•'} ${d.name||d.sport} <span style="opacity:0.5">${d.duration_min}min</span></span>
+        <span style="color:${done?'var(--green)':'var(--muted)'};text-align:right">${actStr||'—'}</span>
+      </div>`;
+    }).join('');
+
     return `<div style="background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
         <span style="font-size:12px;font-weight:700;color:var(--cyan)">${w.dateRange||w.week}</span>
         ${scoreHtml}
       </div>
-      ${w.summary ? `<div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5">${w.summary.slice(0,120)}${w.summary.length>120?'...':''}</div>` : ''}
-      <div style="margin-bottom:4px;font-size:11px;color:var(--muted)">${workouts.length} entrenos · ${totalMins}min</div>
+      <div style="display:flex;gap:12px;font-size:11px;color:var(--muted);margin-bottom:8px">
+        <span>📋 ${plan.length} entrenos · ${planMins}min</span>
+        <span style="color:${pctColor}">✅ ${doneMins}min (${pct}%)</span>
+      </div>
+      ${w.summary?`<div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5;font-style:italic">"${w.summary.slice(0,100)}${w.summary.length>100?'...':''}"</div>`:''}
       ${daysHtml}
     </div>`;
   }).join('');
+
   el.innerHTML = `<div style="padding:10px">${html}</div>`;
 }
 
