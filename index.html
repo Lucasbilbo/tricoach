@@ -871,6 +871,13 @@ function buildMarkdownWorkout(day) {
   return lines.join('\n').trim();
 }
 
+function syncMobileSidebar() {
+  const mob = document.getElementById('mobileSidebarContent');
+  if (mob && mob.style.display !== 'none') {
+    mob.innerHTML = document.getElementById('sidebarContent').innerHTML;
+  }
+}
+
 async function clearWeekFromIntervals() {
   const statusEl = document.getElementById('weekStatus');
   const mobileStatusEl = document.getElementById('mobileWeekStatus');
@@ -904,22 +911,23 @@ async function clearWeekFromIntervals() {
       }
     }
     setStatus('ok', `✅ ${deleted} eventos borrados`);
+    syncMobileSidebar();
   } catch(e) {
     setStatus('error', '❌ Error al limpiar');
   }
 }
 
 async function sendWeekToIntervals() {
-  const btn = document.getElementById('sendWeekBtn');
+  const btns = [...document.querySelectorAll('#sendWeekBtn')];
   const statusEl = document.getElementById('weekStatus');
   const mobileStatusEl = document.getElementById('mobileWeekStatus');
   const setStatus = (cls, txt) => {
     [statusEl, mobileStatusEl].forEach(el => { if(el){ el.className='week-status'+(cls?' '+cls:''); el.textContent=txt; }});
   };
-  if (!btn) return;
+  const setBtnText = (txt, disabled) => btns.forEach(b => { b.textContent=txt; b.disabled=disabled; });
+  if (!btns.length) return;
 
-  btn.disabled = true;
-  btn.textContent = '⏳ Enviando...';
+  setBtnText('⏳ Enviando...', true);
   setStatus('', '');
 
   const workouts = weekPlan.filter(d => d.sport);
@@ -962,16 +970,16 @@ async function sendWeekToIntervals() {
   }
 
   if (sent > 0 && failed === 0) {
-    btn.textContent = `✅ ${sent} entrenos enviados`;
+    setBtnText(`✅ ${sent} entrenos enviados`, true);
     setStatus('ok', 'Abre Garmin Connect en el móvil y sincroniza 📱');
+    syncMobileSidebar();
   } else if (sent > 0) {
-    btn.textContent = `⚠️ ${sent} enviados, ${failed} fallaron`;
+    setBtnText(`⚠️ ${sent} enviados, ${failed} fallaron`, false);
     setStatus('err', 'Algunos no se enviaron. Inténtalo de nuevo.');
     btn.disabled = false;
   } else {
-    btn.textContent = '⌚ Enviar semana al Garmin';
+    setBtnText('⌚ Enviar semana al Garmin', false);
     setStatus('err', '❌ Error de conexión. ¿Estás en Netlify?');
-    btn.disabled = false;
   }
 }
 
