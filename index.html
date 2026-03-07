@@ -537,6 +537,14 @@ MÁXIMO 4 steps. Un solo step de cada tipo.
 - desc natación siempre: "ZONA + MATERIAL" — ejemplos: "Z2 pull buoy", "Z3 palas+pull", "Z1 aletas", "Z4 libre"
 - NUNCA dos steps del mismo tipo en natación`;
 
+  // Inject weekly memory
+  if (weeklyMemory && weeklyMemory.length > 0) {
+    const memStr = weeklyMemory.slice(-8).map(w =>
+      `• Semana ${w.week}: ${w.summary}${w.fatigue?' | Fatiga: '+w.fatigue:''}${w.injuries?' | Molestias: '+w.injuries:''}${w.highlights?' | Destacado: '+w.highlights:''}`
+    ).join('\n');
+    s += `\n\n--- MEMORIA PROGRESO LUCAS (últimas semanas) ---\n${memStr}\nUSA esta memoria para dar continuidad — recuerda lesiones, sensaciones y logros previos al planificar.`;
+  }
+
   if (activities.length > 0) {
     const DAYS_ES = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
     const sum = activities.slice(0,15).map(a => {
@@ -765,6 +773,7 @@ Así funciona:
 
 let historySha = null;
 let savePending = false;
+let weeklyMemory = []; // [{week, summary, fatigue, injuries, highlights}]
 
 function saveHistory() {
   if (history.length > 40) history = history.slice(-40);
@@ -778,7 +787,7 @@ function saveHistory() {
         const res = await fetch(HISTORY_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ history, plan: weekPlan, sha: historySha })
+          body: JSON.stringify({ history, plan: weekPlan, memory: weeklyMemory, sha: historySha })
         });
         const data = await res.json();
         if (data.sha) historySha = data.sha;
@@ -799,6 +808,9 @@ async function loadHistoryFromGithub() {
     if (data.plan && data.plan.length > 0) {
       weekPlan = data.plan;
       localStorage.setItem(PLAN_KEY, JSON.stringify(weekPlan));
+    }
+    if (data.memory && data.memory.length > 0) {
+      weeklyMemory = data.memory;
     }
     return true;
   } catch(e) {
@@ -999,6 +1011,38 @@ function buildMarkdownWorkout(day) {
   }
 
   return lines.join('\n').trim();
+}
+
+// ─── WEEKLY MEMORY ───
+function saveWeekMemory(summary, fatigue, injuries, highlights) {
+  const now = new Date();
+  const week = `${now.getFullYear()}-W${String(Math.ceil(((now - new Date(now.getFullYear(),0,1))/86400000 + new Date(now.getFullYear(),0,1).getDay()+1)/7)).padStart(2,'0')}`;
+  // Update existing or add new
+  const idx = weeklyMemory.findIndex(w => w.week === week);
+  const entry = { week, summary, fatigue: fatigue||'', injuries: injuries||'', highlights: highlights||'' };
+  if (idx >= 0) weeklyMemory[idx] = entry;
+  else weeklyMemory.push(entry);
+  // Keep last 12 weeks
+  if (weeklyMemory.length > 12) weeklyMemory = weeklyMemory.slice(-12);
+  saveHistory();
+}
+
+// Auto-extract memory from coach responses
+function extractAndSaveMemory(coachText) {
+  // Look for week summary patterns in coach response
+  const hasSummary = coachText.includes('semana') && (coachText.includes('✅') || coachText.includes('cumpliste') || coachText.includes('completaste'));
+  if (!hasSummary) return;
+  
+  // Extract key info
+  const fatigue = coachText.match(/fatiga[^.]*\./i)?.[0]?.slice(0,80) || '';
+  const injury = coachText.match(/molestia[^.]*\.|lesión[^.]*\.|dolor[^.]*/i)?.[0]?.slice(0,80) || '';
+  const highlight = coachText.match(/hito[^.]*\.|primera vez[^.]*\.|récord[^.]*/i)?.[0]?.slice(0,80) || '';
+  
+  // Build summary from first 150 chars of analysis
+  const lines = coachText.split('\n').filter(l => l.includes('✅') || l.includes('❌') || l.includes('CONCLUSIÓN'));
+  const summary = lines.slice(0,3).join(' ').slice(0,150);
+  
+  if (summary.length > 20) saveWeekMemory(summary, fatigue, injury, highlight);
 }
 
 function syncMobileSidebar() {
@@ -1232,6 +1276,7 @@ async function sendAutoMsg(text) {
     history.push({role:'assistant',content:reply});
     saveHistory(); updateMemLabel();
     addCoachBubble(reply);
+    extractAndSaveMemory(reply);
   } catch { removeTyping(); addCoachBubble('Error de conexión.'); }
   isLoading=false; document.getElementById('sendBtn').disabled=false;
 }
@@ -1251,6 +1296,7 @@ async function sendMessage() {
     history.push({role:'assistant',content:reply});
     saveHistory(); updateMemLabel();
     addCoachBubble(reply);
+    extractAndSaveMemory(reply);
   } catch { removeTyping(); addCoachBubble('Error de conexión.'); }
   isLoading=false; document.getElementById('sendBtn').disabled=false;
   input.focus();
