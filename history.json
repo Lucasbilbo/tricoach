@@ -1,10 +1,6 @@
 {
   "history": [
     {
-      "role": "assistant",
-      "content": "¡Aquí sigo Lucas! \n\n¿Todo bien? ¿Alguna duda sobre el plan de la semana 9-16 marzo que acabamos de montar, o hay algo que quieres ajustar?\n\nEl plan está diseñado para aprovechar que estás en Bilbao toda la semana - buen volumen de natación, salidas largas en bici exterior, y trabajo de transiciones. \n\n¿Necesitas que repase algún día en concreto o tienes alguna pregunta sobre las zonas de intensidad?"
-    },
-    {
       "role": "user",
       "content": "otro test"
     },
@@ -159,6 +155,10 @@
     {
       "role": "user",
       "content": "test"
+    },
+    {
+      "role": "assistant",
+      "content": "¡Todo perfecto Lucas! \n\nSistema funcionando al 100%. Cuando quieras seguimos con el entrenamiento o cualquier ajuste que necesites hacer al plan de la semana 9-15 marzo.\n\n¿Todo listo para arrancar el lunes con esa natación de 2.6km?"
     }
   ],
   "plan": [
