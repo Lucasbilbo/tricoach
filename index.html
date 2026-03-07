@@ -638,12 +638,14 @@ Así funciona:
 
     // Si hay actividades nuevas desde la última visita, el coach las analiza automáticamente
     if (newActs && newActs.length > 0) {
+      const DAYS_ES = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
       const actsStr = newActs.map(a => {
         const date = a.start_date ? a.start_date.slice(0,10) : '?';
+        const dayName = a.start_date ? DAYS_ES[new Date(a.start_date.slice(0,10)+'T12:00:00').getDay()] : '';
         const dist = a.distance ? (a.distance/1000).toFixed(1)+'km' : '';
         const time = a.moving_time ? Math.round(a.moving_time/60)+'min' : '';
         const hr = a.average_heartrate ? `FC media ${Math.round(a.average_heartrate)}ppm` : '';
-        return `- ${date} ${a.sport_type||a.type}: ${a.name} ${dist} ${time} ${hr}`.trim();
+        return `- ${dayName} ${date} ${a.sport_type||a.type}: ${a.name} ${dist} ${time} ${hr}`.trim();
       }).join('\n');
       setTimeout(() => {
         sendAutoMsg(`Nuevas actividades en Strava desde mi última visita:\n${actsStr}\n\nAnaliza brevemente cómo fue y si estoy cumpliendo el plan.`);
