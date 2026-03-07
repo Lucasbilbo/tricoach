@@ -566,6 +566,22 @@ MÁXIMO 4 steps. Un solo step de cada tipo.
     s += `\n\n--- ACTIVIDADES STRAVA RECIENTES (${activities.length} total) ---\n${sum}`;
   }
 
+  // Fatiga acumulada en system prompt
+  if (activities.length > 0) {
+    const n7 = new Date(); n7.setDate(n7.getDate()-7);
+    const n28 = new Date(); n28.setDate(n28.getDate()-28);
+    const acuteMin = activities.filter(a=>new Date(a.start_date)>=n7).reduce((s,a)=>s+Math.round((a.moving_time||0)/60),0);
+    const chronic28Min = activities.filter(a=>new Date(a.start_date)>=n28).reduce((s,a)=>s+Math.round((a.moving_time||0)/60),0);
+    const chronicMin = Math.round(chronic28Min/4);
+    const acrVal = chronicMin > 0 ? (acuteMin/chronicMin) : 0;
+    let fatigueMsg;
+    if (acrVal < 0.8) fatigueMsg = `FRESCO (ACR ${acrVal.toFixed(2)}) — carga baja vs media. Puedes exigir más esta semana.`;
+    else if (acrVal <= 1.3) fatigueMsg = `ÓPTIMO (ACR ${acrVal.toFixed(2)}) — zona ideal. Mantén nivel planificado.`;
+    else if (acrVal <= 1.5) fatigueMsg = `CARGADO (ACR ${acrVal.toFixed(2)}) — no añadir intensidad extra. Prioriza recuperación.`;
+    else fatigueMsg = `SOBRECARGA (ACR ${acrVal.toFixed(2)}) — riesgo de lesión real. Reduce carga 30-40% esta semana sin negociación.`;
+    s += `\n\n--- FATIGA ACUMULADA ---\nEstado: ${fatigueMsg}\nCarga esta semana: ${acuteMin}min | Media últimas 4 semanas: ${chronicMin}min\nINSTRUCCIÓN: Usa este dato para ajustar el plan. Sé directo y exigente — si hay sobrecarga dilo claramente y recorta. Si está fresco, mete caña. No regales los oídos.`;
+  }
+
   // Comparación plan vs ejecución
   if (weekPlan && weekPlan.length > 0) {
     const planWorkouts = weekPlan.filter(d => d.sport);
@@ -672,6 +688,29 @@ function renderStats() {
     return `<div class="an-leg-item"><div class="an-leg-dot" style="background:${sports[k]?.color||'var(--muted)'}"></div><span>${sports[k]?.label||k}: <b>${h}h${min>0?min+'m':''}</b></span></div>`;
   }).join('');
 
+  // ── FATIGA ACUMULADA (ratio agudo/crónico) ──
+  const now7 = new Date(); now7.setDate(now7.getDate() - 7);
+  const now28 = new Date(); now28.setDate(now28.getDate() - 28);
+  const acute = activities.filter(a => new Date(a.start_date) >= now7).reduce((s,a) => s + Math.round((a.moving_time||0)/60), 0);
+  const chronic28 = activities.filter(a => new Date(a.start_date) >= now28).reduce((s,a) => s + Math.round((a.moving_time||0)/60), 0);
+  const chronic = Math.round(chronic28 / 4); // media semanal últimas 4 semanas
+  const acr = chronic > 0 ? (acute / chronic) : 0;
+  
+  let fatigueColor, fatigueStatus, fatigueDetail;
+  if (acr < 0.8) {
+    fatigueColor = 'var(--cyan)'; fatigueStatus = '🔵 Fresco';
+    fatigueDetail = 'Carga baja vs media. Puedes meter más volumen o intensidad esta semana.';
+  } else if (acr <= 1.3) {
+    fatigueColor = 'var(--green)'; fatigueStatus = '🟢 Carga óptima';
+    fatigueDetail = 'Zona ideal de entrenamiento. Mantén el nivel.';
+  } else if (acr <= 1.5) {
+    fatigueColor = 'var(--orange)'; fatigueStatus = '🟡 Cargado';
+    fatigueDetail = 'Carga alta esta semana. No añadir intensidad — prioriza recuperación.';
+  } else {
+    fatigueColor = '#ff4444'; fatigueStatus = '🔴 Sobrecarga';
+    fatigueDetail = 'Riesgo real de lesión. Reduce carga mínimo 30-40% esta semana.';
+  }
+
   // ── PREPARACIÓN OLÍMPICO ──
   // Objetivos BASE para olímpico (distancias acumuladas mínimas en toda la preparación)
   // Olímpico: 1.5km swim / 40km bike / 10km run
@@ -727,6 +766,18 @@ function renderStats() {
       <div class="an-donut-row">
         <div class="an-donut"><svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="22" fill="none" stroke="var(--s3)" stroke-width="8"/>${donutParts}</svg></div>
         <div class="an-legend">${legendHtml||'<span style="color:var(--muted);font-size:11px">Sin datos</span>'}</div>
+      </div>
+    </div>
+    <div class="an-section">
+      <div class="an-title">⚡ Fatiga acumulada</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span style="font-size:18px;font-weight:700;color:${fatigueColor}">${fatigueStatus}</span>
+        <span style="font-size:11px;color:var(--muted)">ACR: ${acr.toFixed(2)}</span>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px">${fatigueDetail}</div>
+      <div style="display:flex;gap:16px;font-size:11px">
+        <span>Esta semana: <b style="color:var(--cyan)">${acute}min</b></span>
+        <span>Media 4sem: <b style="color:var(--muted)">${chronic}min</b></span>
       </div>
     </div>
     <div class="an-section">
