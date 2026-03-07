@@ -83,6 +83,10 @@
     {
       "role": "assistant",
       "content": "¡Todo en orden Lucas! \n\nSistema funcionando perfectamente. Cuando quieras retomamos el entrenamiento.\n\n¿Listo para esa semana en Bilbao con natación, bici exterior y running?"
+    },
+    {
+      "role": "user",
+      "content": "Semana Bilbao"
     }
   ],
   "plan": [
