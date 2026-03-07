@@ -556,12 +556,49 @@ MÁXIMO 4 steps. Un solo step de cada tipo.
   if (activities.length > 0) {
     const DAYS_ES = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
     const sum = activities.slice(0,15).map(a => {
-      const d = a.distance?(a.distance/1000).toFixed(1)+'km':'';
-      const t = a.moving_time?Math.round(a.moving_time/60)+'min':'';
-      const hr = a.average_heartrate?`FC${Math.round(a.average_heartrate)}ppm`:'';
+      const sport = a.sport_type || a.type || '?';
+      const dist = a.distance ? (a.distance/1000).toFixed(2)+'km' : '';
+      const t = a.moving_time ? Math.round(a.moving_time/60)+'min' : '';
       const date = (a.start_date||'').slice(0,10);
       const dayName = date ? DAYS_ES[new Date(date+'T12:00:00').getDay()] : '';
-      return `• ${dayName} ${date} [${a.sport_type||a.type||'?'}] ${a.name||''} ${d} ${t} ${hr}`.trim();
+      
+      // FC
+      const fcMedia = a.average_heartrate ? `FCmedia:${Math.round(a.average_heartrate)}` : '';
+      const fcMax = a.max_heartrate ? `FCmax:${Math.round(a.max_heartrate)}` : '';
+      
+      // Pace (running) o velocidad (bici)
+      let ritmo = '';
+      if (a.moving_time && a.distance > 0) {
+        if (['Run','VirtualRun'].includes(sport)) {
+          const paceSec = (a.moving_time / (a.distance/1000));
+          const paceMin = Math.floor(paceSec/60);
+          const paceSecs = Math.round(paceSec%60).toString().padStart(2,'0');
+          ritmo = `pace:${paceMin}:${paceSecs}/km`;
+        } else if (['Ride','VirtualRide','EBikeRide'].includes(sport)) {
+          const kmh = ((a.distance/1000) / (a.moving_time/3600)).toFixed(1);
+          ritmo = `vel:${kmh}km/h`;
+        } else if (sport === 'Swim') {
+          const paceSec100 = (a.moving_time / (a.distance/100));
+          const pMin = Math.floor(paceSec100/60);
+          const pSec = Math.round(paceSec100%60).toString().padStart(2,'0');
+          ritmo = `pace:${pMin}:${pSec}/100m`;
+        }
+      }
+      
+      // Desnivel
+      const elev = a.total_elevation_gain > 5 ? `D+${Math.round(a.total_elevation_gain)}m` : '';
+      
+      // Cadencia
+      const cad = a.average_cadence ? `cad:${Math.round(a.average_cadence)}` : '';
+      
+      // Potencia (bici)
+      const watts = a.average_watts ? `${Math.round(a.average_watts)}W` : '';
+      
+      // Suffercore / perceived effort
+      const rpe = a.perceived_exertion ? `RPE:${a.perceived_exertion}` : '';
+
+      const extras = [fcMedia, fcMax, ritmo, elev, cad, watts, rpe].filter(Boolean).join(' ');
+      return `• ${dayName} ${date} [${sport}] ${a.name||''} ${dist} ${t} ${extras}`.trim();
     }).join('\n');
     s += `\n\n--- ACTIVIDADES STRAVA RECIENTES (${activities.length} total) ---\n${sum}`;
   }
