@@ -903,8 +903,11 @@ async function init() {
   handleGoogleCallback();
 
   await loadHistoryFromGithub();
-  // Carga actividades Strava automáticamente
-  const newActs = await loadStravaAuto();
+  // Carga Strava y Calendar en paralelo
+  const [newActs] = await Promise.all([
+    loadStravaAuto(),
+    googleTokens ? loadGoogleCalendar() : Promise.resolve()
+  ]);
   updateMemLabel(); updateMobileBar();
   renderSidebar();
 
@@ -1222,6 +1225,7 @@ async function connectGoogleCalendar() {
 
 async function loadGoogleCalendar() {
   if (!googleTokens) return;
+  setCalendarStatus('loading');
   try {
     const params = new URLSearchParams({
       access_token: googleTokens.access_token || '',
@@ -1229,7 +1233,11 @@ async function loadGoogleCalendar() {
     });
     const res = await fetch(`/.netlify/functions/google-calendar?${params}`);
     const data = await res.json();
-    if (data.error) { console.warn('Calendar error:', data.error); return; }
+    if (data.error) {
+      console.warn('Calendar error:', data.error);
+      setCalendarStatus('error');
+      return;
+    }
     if (data.new_access_token) {
       googleTokens.access_token = data.new_access_token;
       localStorage.setItem('google_tokens', JSON.stringify(googleTokens));
@@ -1237,8 +1245,31 @@ async function loadGoogleCalendar() {
     calendarEvents = data.events || [];
     localStorage.setItem('google_events', JSON.stringify(calendarEvents));
     updateCalendarBtn();
+    setCalendarStatus('ok');
     console.log(`✅ Calendar: ${calendarEvents.length} eventos cargados`);
-  } catch(e) { console.warn('Calendar load error:', e); }
+  } catch(e) {
+    console.warn('Calendar load error:', e);
+    setCalendarStatus('error');
+  }
+}
+
+function setCalendarStatus(status) {
+  const btn = document.getElementById('calendarBtnSidebar');
+  if (!btn) return;
+  if (status === 'loading') {
+    btn.textContent = '📅 Cargando calendario...';
+    btn.style.background = 'var(--s3)';
+    btn.style.color = 'var(--muted)';
+  } else if (status === 'ok') {
+    btn.textContent = `✅ Google Cal. (${calendarEvents.length} eventos)`;
+    btn.style.background = 'rgba(105,255,135,0.15)';
+    btn.style.color = '#69ff87';
+  } else if (status === 'error') {
+    btn.textContent = '🔴 Calendar error — pulsa para reconectar';
+    btn.style.background = 'rgba(255,68,68,0.15)';
+    btn.style.color = '#ff4444';
+    btn.onclick = () => connectGoogleCalendar();
+  }
 }
 
 function updateCalendarBtn() {
