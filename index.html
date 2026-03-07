@@ -343,6 +343,10 @@ textarea.json-in {
       <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.599h4.172L10.463 0l-7 13.828h4.169"/></svg>
       <span id="stravaLabel">Strava</span>
     </button>
+    <button class="hbtn" id="calendarHeaderBtn" onclick="googleTokens ? loadGoogleCalendar() : connectGoogleCalendar()" title="Google Calendar" style="display:none;background:rgba(105,255,135,0.12);border:1px solid rgba(105,255,135,0.25);color:#69ff87;gap:4px;">
+      <span style="font-size:11px">📅</span>
+      <span id="calendarHeaderLabel">Cal.</span>
+    </button>
     <div class="mem-pill">
       <div class="mem-dot"></div>
       <span id="memLabel">Memoria activa</span>
@@ -901,6 +905,10 @@ async function init() {
   const savedGEvents = localStorage.getItem('google_events');
   if (savedGEvents) { try { calendarEvents = JSON.parse(savedGEvents); } catch(e){} }
   handleGoogleCallback();
+  if (googleTokens) {
+    const hBtn = document.getElementById('calendarHeaderBtn');
+    if (hBtn) { hBtn.style.display = 'flex'; document.getElementById('calendarHeaderLabel').textContent = `● ${calendarEvents.length} ev.`; }
+  }
 
   await loadHistoryFromGithub();
   // Carga Strava y Calendar en paralelo
@@ -1254,21 +1262,26 @@ async function loadGoogleCalendar() {
 }
 
 function setCalendarStatus(status) {
+  // Sidebar button
   const btn = document.getElementById('calendarBtnSidebar');
-  if (!btn) return;
+  // Header button
+  const hBtn = document.getElementById('calendarHeaderBtn');
+  const hLabel = document.getElementById('calendarHeaderLabel');
+
+  if (hBtn) hBtn.style.display = 'flex';
+
   if (status === 'loading') {
-    btn.textContent = '📅 Cargando calendario...';
-    btn.style.background = 'var(--s3)';
-    btn.style.color = 'var(--muted)';
+    if (btn) { btn.textContent = '📅 Cargando calendario...'; btn.style.background = 'var(--s3)'; btn.style.color = 'var(--muted)'; }
+    if (hLabel) hLabel.textContent = '...';
+    if (hBtn) { hBtn.style.background = 'rgba(100,100,100,0.15)'; hBtn.style.borderColor = 'rgba(100,100,100,0.3)'; hBtn.style.color = 'var(--muted)'; }
   } else if (status === 'ok') {
-    btn.textContent = `✅ Google Cal. (${calendarEvents.length} eventos)`;
-    btn.style.background = 'rgba(105,255,135,0.15)';
-    btn.style.color = '#69ff87';
+    if (btn) { btn.textContent = `✅ Google Cal. (${calendarEvents.length} ev.)`; btn.style.background = 'rgba(105,255,135,0.15)'; btn.style.color = '#69ff87'; }
+    if (hLabel) hLabel.textContent = `● ${calendarEvents.length} ev.`;
+    if (hBtn) { hBtn.style.background = 'rgba(105,255,135,0.12)'; hBtn.style.borderColor = 'rgba(105,255,135,0.3)'; hBtn.style.color = '#69ff87'; }
   } else if (status === 'error') {
-    btn.textContent = '🔴 Calendar error — pulsa para reconectar';
-    btn.style.background = 'rgba(255,68,68,0.15)';
-    btn.style.color = '#ff4444';
-    btn.onclick = () => connectGoogleCalendar();
+    if (btn) { btn.textContent = '🔴 Calendar — pulsa para reconectar'; btn.style.background = 'rgba(255,68,68,0.15)'; btn.style.color = '#ff4444'; btn.onclick = () => connectGoogleCalendar(); }
+    if (hLabel) hLabel.textContent = '● Error';
+    if (hBtn) { hBtn.style.background = 'rgba(255,68,68,0.12)'; hBtn.style.borderColor = 'rgba(255,68,68,0.3)'; hBtn.style.color = '#ff4444'; hBtn.onclick = () => connectGoogleCalendar(); }
   }
 }
 
