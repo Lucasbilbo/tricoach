@@ -28,10 +28,10 @@ body::before {
 
 /* HEADER */
 header {
-  position:relative; z-index:20;
+  position:sticky; top:0; z-index:20;
   display:flex; align-items:center; gap:12px;
   padding:11px 20px;
-  background:rgba(8,12,18,0.92); backdrop-filter:blur(12px);
+  background:rgba(8,12,18,0.97); backdrop-filter:blur(12px);
   border-bottom:1px solid var(--border);
 }
 .logo-mark {
@@ -294,8 +294,9 @@ textarea.json-in {
   .chips::-webkit-scrollbar{display:none;}
   .chip{white-space:nowrap;padding:6px 12px;font-size:12px;}
   header{padding:8px 12px;}
-  body{padding-top:env(safe-area-inset-top);}
   textarea#input{font-size:16px;}
+  body{padding-top:env(safe-area-inset-top);}
+  header{top:env(safe-area-inset-top);}
   .logo-name{font-size:15px;}
   .logo-tag{display:none;}
   .logo-mark{width:30px;height:30px;font-size:14px;}
