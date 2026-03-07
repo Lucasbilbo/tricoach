@@ -460,20 +460,26 @@ function renderStats() {
     Run:  { color: 'var(--green)', label: '🏃 Running' }
   };
   const now = new Date();
-  const weeks = [];
-  for (let i = 7; i >= 0; i--) {
-    const start = new Date(now); start.setDate(now.getDate() - now.getDay() + 1 - i * 7);
-    const end = new Date(start); end.setDate(start.getDate() + 6);
-    start.setHours(0,0,0,0); end.setHours(23,59,59,999);
-    const acts = activities.filter(a => { const d = new Date(a.start_date); return d >= start && d <= end; });
-    const mins = acts.reduce((s, a) => s + Math.round((a.moving_time||0)/60), 0);
-    weeks.push({ lbl: `${start.getDate()}/${start.getMonth()+1}`, mins, start, end });
-  }
+  // Calcular todas las semanas con actividad
+  const weekMap = {};
+  activities.forEach(a => {
+    const d = new Date(a.start_date);
+    const monday = new Date(d); monday.setDate(d.getDate() - ((d.getDay()+6)%7)); monday.setHours(0,0,0,0);
+    const key = monday.toISOString().slice(0,10);
+    if (!weekMap[key]) weekMap[key] = { lbl: `${monday.getDate()}/${monday.getMonth()+1}`, mins: 0, start: monday, end: new Date(monday.getTime()+6*24*3600*1000) };
+    weekMap[key].mins += Math.round((a.moving_time||0)/60);
+  });
+  // Ordenar y coger las últimas 10 semanas con actividad + semana actual
+  const currentMonday = new Date(now); currentMonday.setDate(now.getDate() - ((now.getDay()+6)%7)); currentMonday.setHours(0,0,0,0);
+  const currentKey = currentMonday.toISOString().slice(0,10);
+  if (!weekMap[currentKey]) weekMap[currentKey] = { lbl: `${currentMonday.getDate()}/${currentMonday.getMonth()+1}`, mins: 0, start: currentMonday, end: new Date(currentMonday.getTime()+6*24*3600*1000) };
+  const weeks = Object.values(weekMap).sort((a,b) => a.start-b.start).slice(-10);
   const maxMins = Math.max(...weeks.map(w => w.mins), 1);
   const barsHtml = weeks.map(w => {
     const h = Math.round((w.mins / maxMins) * 52);
     const isCurrent = w.start <= now && now <= w.end;
-    return `<div class="an-bar-wrap"><div class="an-bar" style="height:${Math.max(h,2)}px;background:${isCurrent?'var(--cyan)':'var(--s3)'}" title="${w.mins}min"></div><div class="an-bar-lbl">${w.lbl}</div></div>`;
+    const color = isCurrent ? 'var(--cyan)' : 'rgba(0,229,255,0.35)';
+    return `<div class="an-bar-wrap"><div class="an-bar" style="height:${Math.max(h,2)}px;background:${color}" title="${w.mins}min"></div><div class="an-bar-lbl">${w.lbl}</div></div>`;
   }).join('');
 
   const since4w = new Date(); since4w.setDate(since4w.getDate() - 28);
