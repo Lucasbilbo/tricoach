@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>TriCoach AI</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -292,14 +292,16 @@ textarea.json-in {
   .mobile-nav{display:block;}
   .chips{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
   .chips::-webkit-scrollbar{display:none;}
-  header{padding:8px 12px;}
+  .chip{white-space:nowrap;padding:6px 12px;font-size:12px;}
+  header{padding:8px 12px;padding-top:max(8px, env(safe-area-inset-top));}
   .logo-name{font-size:15px;}
   .logo-tag{display:none;}
   .logo-mark{width:30px;height:30px;font-size:14px;}
   .mem-pill{display:none;}
-  .chat-col{padding-bottom:120px;}
-  .input-area{padding:8px 0 10px;}
-  #chat{padding-bottom:8px;}
+  .chat-col{padding-bottom:100px;}
+  .input-area{padding:8px 0 6px;}
+  #chat{padding-bottom:4px;}
+  .mobile-nav{padding-bottom:max(16px, env(safe-area-inset-bottom));}
 }
 </style>
 </head>
@@ -868,6 +870,10 @@ function buildMarkdownWorkout(day) {
 
 async function clearWeekFromIntervals() {
   const statusEl = document.getElementById('weekStatus');
+  const mobileStatusEl = document.getElementById('mobileWeekStatus');
+  const setStatus = (cls, txt) => {
+    [statusEl, mobileStatusEl].forEach(el => { if(el){ el.className='week-status'+(cls?' '+cls:''); el.textContent=txt; }});
+  };
   if (!weekPlan.length) return;
 
   const dates = weekPlan.filter(d => d.sport && d.date).map(d => d.date);
@@ -876,15 +882,14 @@ async function clearWeekFromIntervals() {
   const oldest = dates[0];
   const newest = dates[dates.length - 1];
 
-  statusEl.className = 'week-status';
-  statusEl.textContent = '🗑️ Buscando eventos...';
+  setStatus('', '🗑️ Buscando eventos...');
 
   try {
     const res = await fetch(`/.netlify/functions/intervals?action=list&start=${oldest}&end=${newest}`);
     const events = await res.json();
 
     if (!Array.isArray(events) || events.length === 0) {
-      statusEl.textContent = 'No hay eventos que borrar';
+      setStatus('', 'No hay eventos que borrar');
       return;
     }
 
@@ -895,23 +900,24 @@ async function clearWeekFromIntervals() {
         deleted++;
       }
     }
-    statusEl.className = 'week-status ok';
-    statusEl.textContent = `✅ ${deleted} eventos borrados`;
+    setStatus('ok', `✅ ${deleted} eventos borrados`);
   } catch(e) {
-    statusEl.className = 'week-status error';
-    statusEl.textContent = '❌ Error al limpiar';
+    setStatus('error', '❌ Error al limpiar');
   }
 }
 
 async function sendWeekToIntervals() {
   const btn = document.getElementById('sendWeekBtn');
   const statusEl = document.getElementById('weekStatus');
+  const mobileStatusEl = document.getElementById('mobileWeekStatus');
+  const setStatus = (cls, txt) => {
+    [statusEl, mobileStatusEl].forEach(el => { if(el){ el.className='week-status'+(cls?' '+cls:''); el.textContent=txt; }});
+  };
   if (!btn) return;
 
   btn.disabled = true;
   btn.textContent = '⏳ Enviando...';
-  statusEl.className = 'week-status';
-  statusEl.textContent = '';
+  setStatus('', '');
 
   const workouts = weekPlan.filter(d => d.sport);
   let sent = 0, failed = 0;
@@ -954,17 +960,14 @@ async function sendWeekToIntervals() {
 
   if (sent > 0 && failed === 0) {
     btn.textContent = `✅ ${sent} entrenos enviados`;
-    statusEl.className = 'week-status ok';
-    statusEl.textContent = 'Abre Garmin Connect en el móvil y sincroniza 📱';
+    setStatus('ok', 'Abre Garmin Connect en el móvil y sincroniza 📱');
   } else if (sent > 0) {
     btn.textContent = `⚠️ ${sent} enviados, ${failed} fallaron`;
-    statusEl.className = 'week-status err';
-    statusEl.textContent = 'Algunos no se enviaron. Inténtalo de nuevo.';
+    setStatus('err', 'Algunos no se enviaron. Inténtalo de nuevo.');
     btn.disabled = false;
   } else {
     btn.textContent = '⌚ Enviar semana al Garmin';
-    statusEl.className = 'week-status err';
-    statusEl.textContent = '❌ Error de conexión. ¿Estás en Netlify?';
+    setStatus('err', '❌ Error de conexión. ¿Estás en Netlify?');
     btn.disabled = false;
   }
 }
@@ -1161,6 +1164,7 @@ init();
   </div>
   <div class="sb-scroll" id="mobileSidebarContent"></div>
   <div class="sb-scroll" id="mobileSidebarStats" style="display:none"></div>
+  <div class="week-status" id="mobileWeekStatus" style="padding:8px 16px;text-align:center"></div>
 </div>
 </body>
 </html>
