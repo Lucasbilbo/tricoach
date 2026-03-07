@@ -821,8 +821,9 @@ function renderHistory() {
     </div>`;
   }).join('');
 
+
+
   // ── TREND DATA ──
-  const trendWeeks = [];
   const trendMap = {};
   activities.forEach(a => {
     const d = new Date(a.start_date||'');
