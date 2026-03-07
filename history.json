@@ -87,6 +87,10 @@
     {
       "role": "user",
       "content": "Semana Bilbao"
+    },
+    {
+      "role": "assistant",
+      "content": "¡Perfecto Lucas! Ya tenemos la semana montada para Bilbao (9-16 marzo) con todas las facilidades - natación, bici exterior y running disponibles todos los días.\n\n¿Cómo te fue el finde? ¿Pudiste hacer esa bici del sábado 7 y el running + estiramientos del domingo 8 que tenías planeado?\n\nY más importante, ¿cómo llegas de sensaciones para arrancar esta semana? Con los 2km de natación del jueves pasado ya tienes buenas sensaciones en el agua.\n\nEl plan que te monté está diseñado para:\n- Aprovechar al máximo estar en Bilbao \n- Seguir construyendo base aeróbica sólida\n- Introducir trabajo técnico específico (especialmente natación con pull buoy para la flotabilidad)\n- Primera transición bici-carrera del sábado\n\n¿Algún ajuste que quieras hacer o arrancamos tal como está planificado?"
     }
   ],
   "plan": [
