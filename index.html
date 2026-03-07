@@ -120,6 +120,16 @@ header {
 .an-goal-fill { height:100%; border-radius:3px; background:linear-gradient(90deg,var(--cyan),var(--green)); transition:width .5s; }
 .an-goal-row { display:flex; justify-content:space-between; font-size:10px; color:var(--muted); margin-bottom:6px; }
 
+/* DAY DETAIL EXPAND */
+.wd-detail { display:none; background:var(--s1); border-top:1px solid var(--border); padding:8px 10px; font-size:11px; line-height:1.6; }
+.wd-detail.open { display:block; }
+.wd-detail-step { display:flex; gap:6px; align-items:flex-start; margin-bottom:3px; color:var(--fg); }
+.wd-detail-step-num { color:var(--cyan); font-weight:700; flex-shrink:0; }
+.wd-detail-meta { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:6px; }
+.wd-detail-tag { font-size:10px; padding:2px 7px; border-radius:10px; background:var(--s3); color:var(--muted); }
+.week-day { cursor:pointer; }
+.week-day:hover { background:rgba(255,255,255,0.03); border-radius:6px; }
+
 /* WEEKLY PLAN CARD in sidebar */
 .week-card {
   background:rgba(0,229,255,0.06);
@@ -687,6 +697,12 @@ function temoji(t) {
 }
 const DAY_SHORT = {Lunes:'LUN',Martes:'MAR',Miércoles:'MIE',Jueves:'JUE',Viernes:'VIE',Sábado:'SÁB',Domingo:'DOM'};
 
+function toggleDetail(idx) {
+  const el = document.getElementById('detail-' + idx);
+  if (!el) return;
+  el.classList.toggle('open');
+}
+
 function renderSidebar() {
   const el = document.getElementById('sidebarContent');
   const actCount = document.getElementById('actCount');
@@ -704,17 +720,31 @@ function renderSidebar() {
   let html = `<div class="week-card">
     <div class="week-card-title">📅 ${workouts[0]?.date?.slice(5,10).replace('-','/')} – ${workouts[workouts.length-1]?.date?.slice(5,10).replace('-','/')} — ${workouts.length} entrenos · ${totalMin}min</div>`;
 
-  weekPlan.forEach(day => {
+  weekPlan.forEach((day, idx) => {
     const ds = DAY_SHORT[day.day] || day.day.slice(0,3).toUpperCase();
     const sc = tcls(day.sport);
     const em = temoji(day.sport);
-    html += `<div class="week-day">
+    // Build detail HTML
+    let detailHtml = '';
+    if (day.sport) {
+      const tags = [day.sport, day.duration_min ? day.duration_min+'min' : null, day.description ? day.description.split('\n')[0] : null].filter(Boolean);
+      const tagsHtml = tags.map(t => `<span class="wd-detail-tag">${t}</span>`).join('');
+      const steps = day.steps || [];
+      const stepsHtml = steps.length > 0
+        ? steps.map((s,i) => `<div class="wd-detail-step"><span class="wd-detail-step-num">${i+1}.</span><span>${s.desc || s.type || ''} ${s.duration_sec ? Math.round(s.duration_sec/60)+'min' : ''} ${s.distance_m ? s.distance_m+'m' : ''}</span></div>`).join('')
+        : `<div style="color:var(--muted);font-size:11px">${day.description || 'Sin detalle'}</div>`;
+      detailHtml = `<div class="wd-detail" id="detail-${idx}">
+        <div class="wd-detail-meta">${tagsHtml}</div>
+        ${stepsHtml}
+      </div>`;
+    }
+    html += `<div class="week-day" onclick="${day.sport ? `toggleDetail(${idx})` : ''}">
       <span class="wd-day">${ds}</span>
       ${day.sport
         ? `<span class="wd-sport ${sc}">${em}</span><span class="wd-name">${day.name}</span><span style="font-size:10px;color:var(--muted);flex-shrink:0">${day.duration_min}min</span>`
         : `<span style="color:var(--muted);font-size:11px;flex:1">Descanso</span>`
       }
-    </div>`;
+    </div>${detailHtml}`;
   });
 
   html += `
