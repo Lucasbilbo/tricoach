@@ -909,18 +909,14 @@ async function init() {
   renderSidebar();
 
   if (history.length === 0) {
-    addCoachBubble(`¡Hola Lucas! Soy tu **TriCoach AI** 🏆
-
-Ya tengo todo tu perfil cargado — triatlón olímpico en julio/septiembre, fase BASE, 8-10h/semana.
-
-Así funciona:
-**1.** Me dices si es semana Bilbao o Madrid y cómo fue la anterior
-**2.** Cerramos el plan semanal
-**3.** Un clic → los 7 días van a Intervals.icu → Garmin Connect los descarga al Forerunner
-
-**¿Es semana Bilbao o Madrid? ¿Empezamos?** 💪`);
-    history.push({role:'assistant', content:'inicio'});
-    saveHistory();
+    // First visit — show welcome without consuming tokens
+    const chat = document.getElementById('chat');
+    chat.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:20px;padding:40px 20px;text-align:center">
+      <div style="font-size:48px">🏆</div>
+      <div style="font-size:22px;font-weight:700;color:var(--cyan)">TriCoach AI</div>
+      <div style="font-size:13px;color:var(--muted);max-width:280px;line-height:1.6">Tu entrenador personal para el olímpico de julio 2026.<br>Perfil cargado · Strava conectado · Garmin listo.</div>
+      <button onclick="startCoach()" style="background:var(--cyan);color:#000;border:none;border-radius:12px;padding:14px 32px;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px;">💬 Empezar con el coach</button>
+    </div>`;
   } else {
     const banner = document.createElement('div');
     banner.className = 'mem-banner';
@@ -929,7 +925,7 @@ Así funciona:
     history.forEach(m => m.role==='user' ? addUserBubble(m.content) : addCoachBubble(m.content, false));
     document.getElementById('chat').scrollTop = 9999;
 
-    // Si hay actividades nuevas desde la última visita, el coach las analiza automáticamente
+    // Mostrar botón si hay actividades nuevas — no lanzar auto
     if (newActs && newActs.length > 0) {
       const DAYS_ES = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
       const actsStr = newActs.map(a => {
@@ -940,11 +936,35 @@ Así funciona:
         const hr = a.average_heartrate ? `FC media ${Math.round(a.average_heartrate)}ppm` : '';
         return `- ${dayName} ${date} ${a.sport_type||a.type}: ${a.name} ${dist} ${time} ${hr}`.trim();
       }).join('\n');
-      setTimeout(() => {
-        sendAutoMsg(`Nuevas actividades en Strava desde mi última visita:\n${actsStr}\n\nAnaliza brevemente cómo fue y si estoy cumpliendo el plan.`);
-      }, 1000);
+
+      // Show banner with button instead of auto-sending
+      const newActsBanner = document.createElement('div');
+      newActsBanner.style.cssText = 'background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);border-radius:10px;padding:12px 16px;margin:12px;font-size:12px;';
+      newActsBanner.innerHTML = `<div style="color:var(--cyan);font-weight:600;margin-bottom:6px">🏃 ${newActs.length} actividades nuevas en Strava</div>
+        <div style="color:var(--muted);margin-bottom:10px">${newActs.map(a=>`${a.sport_type||a.type} ${a.distance?(a.distance/1000).toFixed(1)+'km':''}`).join(' · ')}</div>
+        <button onclick="analyzeNewActs(${JSON.stringify(actsStr).replace(/"/g,'&quot;')})" style="background:var(--cyan);color:#000;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;">📊 Analizar con el coach</button>`;
+      document.getElementById('chat').appendChild(newActsBanner);
+      document.getElementById('chat').scrollTop = 9999;
     }
   }
+}
+
+function startCoach() {
+  const chat = document.getElementById('chat');
+  chat.innerHTML = '';
+  addCoachBubble(`¡Hola Lucas! Soy tu **TriCoach AI** 🏆
+
+Ya tengo todo tu perfil cargado — triatlón olímpico en julio/septiembre, fase BASE, 8-10h/semana.
+
+**¿Es semana Bilbao o Madrid? ¿Empezamos?** 💪`);
+  history.push({role:'assistant', content:'inicio'});
+  saveHistory();
+}
+
+function analyzeNewActs(actsStr) {
+  // Remove the banner
+  document.querySelectorAll('[style*="actividades nuevas"]').forEach(el => el.remove());
+  sendAutoMsg(`Nuevas actividades en Strava desde mi última visita:\n${actsStr}\n\nAnaliza brevemente cómo fue y si estoy cumpliendo el plan.`);
 }
 
 let historySha = null;
