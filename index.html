@@ -713,7 +713,34 @@ function switchTab(tab) {
 
 function renderHistory() {
   const el = document.getElementById('historyContent');
-  if (!weekHistory || weekHistory.length === 0) {
+
+  // Build weeks from Strava since Jan 2026 even without a saved plan
+  const PREP_START = new Date('2026-01-01');
+  const stravaWeeks = {};
+  (activities||[]).forEach(a => {
+    const d = new Date(a.start_date||'');
+    if (d < PREP_START) return;
+    const monday = new Date(d); monday.setDate(d.getDate()-((d.getDay()+6)%7)); monday.setHours(0,0,0,0);
+    const key = monday.toISOString().slice(0,10);
+    if (!stravaWeeks[key]) {
+      const sunday = new Date(monday.getTime()+6*24*3600*1000);
+      const fmt = d => `${d.getDate()}/${d.getMonth()+1}`;
+      stravaWeeks[key] = { week: key, dateRange: `${fmt(monday)}-${fmt(sunday)}`, acts: [], weekStart: monday };
+    }
+    stravaWeeks[key].acts.push(a);
+  });
+
+  // Merge with saved weekHistory (plans)
+  const allWeeks = { ...stravaWeeks };
+  (weekHistory||[]).forEach(w => {
+    if (!allWeeks[w.week]) allWeeks[w.week] = { week: w.week, dateRange: w.dateRange, acts: [], weekStart: new Date(w.week) };
+    allWeeks[w.week].plan = w.plan;
+    allWeeks[w.week].summary = w.summary;
+    allWeeks[w.week].score = w.score;
+  });
+
+  const sorted = Object.values(allWeeks).sort((a,b) => b.week.localeCompare(a.week));
+  if (sorted.length === 0) {
     el.innerHTML = '<div class="sb-empty"><div class="ei">📜</div>El historial aparecerá aquí a partir de esta semana</div>';
     return;
   }
@@ -723,15 +750,7 @@ function renderHistory() {
   const html = sorted.map(w => {
     const plan = (w.plan||[]).filter(d => d.sport);
     const planMins = plan.reduce((s,d) => s+(d.duration_min||0), 0);
-    const planDates = plan.map(d => d.date).filter(Boolean);
-
-    // Match Strava activities to this week
-    const weekStart = new Date(w.week+'T00:00:00');
-    const weekEnd = new Date(weekStart.getTime() + 7*24*3600*1000);
-    const weekActs = (activities||[]).filter(a => {
-      const d = new Date(a.start_date||'');
-      return d >= weekStart && d < weekEnd;
-    });
+    const weekActs = w.acts || [];
     const doneMins = weekActs.reduce((s,a) => s+Math.round((a.moving_time||0)/60), 0);
     const pct = planMins > 0 ? Math.round((doneMins/planMins)*100) : 0;
     const pctColor = pct>=90?'#69ff87':pct>=70?'#ffb74d':'#ff4444';
@@ -740,6 +759,21 @@ function renderHistory() {
     const scoreBg = w.score>=8?'rgba(105,255,135,0.2)':w.score>=6?'rgba(255,183,77,0.2)':'rgba(255,68,68,0.2)';
     const scoreColor = w.score>=8?'#69ff87':w.score>=6?'#ffb74d':'#ff4444';
     const scoreHtml = w.score ? `<span style="background:${scoreBg};color:${scoreColor};border-radius:6px;padding:2px 7px;font-size:11px;font-weight:700">${w.score}/10</span>` : '';
+
+    // Strava-only rows (no plan)
+    const stravaOnlyHtml = weekActs.length > 0 ? weekActs.map(a => {
+      const sport = a.sport_type||a.type||'?';
+      const dist = a.distance?(a.distance/1000).toFixed(1)+'km':'';
+      const mins = a.moving_time?Math.round(a.moving_time/60)+'min':'';
+      const fc = a.average_heartrate?`FC${Math.round(a.average_heartrate)}`:'';
+      const emoji = SPORT_EMOJI[sport]||'•';
+      const date = (a.start_date||'').slice(5,10).replace('-','/');
+      return `<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:11px;border-bottom:1px solid rgba(255,255,255,0.04)">
+        <span style="color:var(--muted)">${date}</span>
+        <span>${emoji} ${a.name||sport}</span>
+        <span style="color:var(--muted)">${[dist,mins,fc].filter(Boolean).join(' ')}</span>
+      </div>`;
+    }).join('') : '<div style="font-size:11px;color:var(--muted);padding:8px 0">Sin actividades registradas</div>';
 
     // Day rows: plan vs real
     const daysHtml = plan.map(d => {
@@ -768,7 +802,7 @@ function renderHistory() {
         <span style="color:${pctColor}">✅ ${doneMins}min (${pct}%)</span>
       </div>
       ${w.summary?`<div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5;font-style:italic">"${w.summary.slice(0,100)}${w.summary.length>100?'...':''}"</div>`:''}
-      ${daysHtml}
+      ${plan.length > 0 ? daysHtml : stravaOnlyHtml}
     </div>`;
   }).join('');
 
