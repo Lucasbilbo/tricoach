@@ -512,13 +512,57 @@ MÁXIMO 4 steps. Un solo step de cada tipo.
 - NUNCA dos steps del mismo tipo en natación`;
 
   if (activities.length > 0) {
-    const sum = activities.slice(0,10).map(a => {
+    const DAYS_ES = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+    const sum = activities.slice(0,15).map(a => {
       const d = a.distance?(a.distance/1000).toFixed(1)+'km':'';
       const t = a.moving_time?Math.round(a.moving_time/60)+'min':'';
-      return `• [${(a.start_date||'').slice(0,10)}] ${a.type||'?'} — ${a.name||''} ${d} ${t}`.trim();
+      const hr = a.average_heartrate?`FC${Math.round(a.average_heartrate)}ppm`:'';
+      const date = (a.start_date||'').slice(0,10);
+      const dayName = date ? DAYS_ES[new Date(date+'T12:00:00').getDay()] : '';
+      return `• ${dayName} ${date} [${a.sport_type||a.type||'?'}] ${a.name||''} ${d} ${t} ${hr}`.trim();
     }).join('\n');
-    s += `\n\n--- ACTIVIDADES STRAVA (${activities.length} total) ---\n${sum}`;
+    s += `\n\n--- ACTIVIDADES STRAVA RECIENTES (${activities.length} total) ---\n${sum}`;
   }
+
+  // Comparación plan vs ejecución
+  if (weekPlan && weekPlan.length > 0) {
+    const planWorkouts = weekPlan.filter(d => d.sport);
+    const planDates = planWorkouts.map(d => d.date);
+    const planSummary = planWorkouts.map(d => `• ${d.day} ${d.date} [${d.sport}] ${d.name} ${d.duration_min}min`).join('\n');
+
+    // Match Strava activities to plan dates
+    const now = new Date();
+    const completedDates = new Set();
+    const completedByDate = {};
+    activities.forEach(a => {
+      const date = (a.start_date||'').slice(0,10);
+      if (planDates.includes(date)) {
+        completedDates.add(date);
+        if (!completedByDate[date]) completedByDate[date] = [];
+        completedByDate[date].push(`${a.sport_type||a.type} ${a.distance?(a.distance/1000).toFixed(1)+'km':''} ${a.moving_time?Math.round(a.moving_time/60)+'min':''}`);
+      }
+    });
+
+    const totalPlanned = planWorkouts.length;
+    const totalCompleted = completedDates.size;
+    const planVsReal = planWorkouts.map(d => {
+      const done = completedByDate[d.date];
+      const pastDay = new Date(d.date+'T23:59:59') < now;
+      if (done) return `✅ ${d.day} ${d.date}: planificado [${d.sport} ${d.duration_min}min] → realizado [${done.join(', ')}]`;
+      if (pastDay) return `❌ ${d.day} ${d.date}: planificado [${d.sport} ${d.duration_min}min] → NO completado`;
+      return `⏳ ${d.day} ${d.date}: [${d.sport} ${d.duration_min}min] — pendiente`;
+    }).join('\n');
+
+    // Volume comparison
+    const plannedMins = planWorkouts.reduce((s,d) => s + (d.duration_min||0), 0);
+    const completedMins = activities
+      .filter(a => planDates.includes((a.start_date||'').slice(0,10)))
+      .reduce((s,a) => s + Math.round((a.moving_time||0)/60), 0);
+    const volPct = plannedMins > 0 ? Math.round((completedMins/plannedMins)*100) : 0;
+
+    s += `\n\n--- COMPARACIÓN PLAN VS EJECUCIÓN ---\n${planVsReal}\n\nResumen: ${totalCompleted}/${totalPlanned} entrenamientos completados | Volumen: ${completedMins}min realizado vs ${plannedMins}min planificado (${volPct}%)\n\nINSTRUCCIÓN: Usa esta comparación para tu análisis. Si volPct>115% → semana que viene bajar carga. Si volPct<70% → investigar motivo antes de planificar. Si hay días ❌ → preguntar qué pasó.`;
+  }
+
   return s;
 }
 
