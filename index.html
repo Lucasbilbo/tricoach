@@ -1011,12 +1011,13 @@ function renderStats() {
     const maxPace = Math.max(...wks.map(w => w.Swim.reduce((s,a)=>s+(a.moving_time||0)/((a.distance||1)/100),0)/w.Swim.length));
     return wks.map(w => {
       const avgPaceSec = w.Swim.reduce((s,a)=>s+(a.moving_time||0)/((a.distance||1)/100),0)/w.Swim.length;
-      const avgSwolf = w.Swim.filter(a=>a.average_cadence).reduce((s,a)=>s+a.average_cadence,0)/Math.max(w.Swim.filter(a=>a.average_cadence).length,1);
+      const totalDist = Math.round(w.Swim.reduce((s,a)=>s+(a.distance||0),0)/1000*10)/10;
       const pm = Math.floor(avgPaceSec/60), ps = Math.round(avgPaceSec%60).toString().padStart(2,'0');
-      const bw = Math.round((1-avgPaceSec/(maxPace*1.1))*100);
+      const paces2 = wks.map(ww => ww.Swim.reduce((s,a)=>s+(a.moving_time||0)/((a.distance||1)/100),0)/ww.Swim.length);
+      const minP = Math.min(...paces2), maxP = Math.max(...paces2), rangeP = Math.max(maxP-minP, 10);
+      const bw = Math.max(10, Math.round((1-(avgPaceSec-minP)/rangeP)*90)+10);
       const lbl = w.monday.getDate()+'/'+(w.monday.getMonth()+1);
-      const swolfStr = avgSwolf > 0 ? `SWOLF${Math.round(avgSwolf)}` : '—';
-      return `<div style="margin-bottom:5px"><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:2px"><span>${lbl}</span><span style="color:var(--cyan)">${pm}:${ps}/100m</span><span>${swolfStr}</span></div><div style="background:var(--s3);border-radius:3px;height:5px"><div style="background:var(--cyan);width:${bw}%;height:5px;border-radius:3px"></div></div></div>`;
+      return `<div style="margin-bottom:5px"><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:2px"><span>${lbl}</span><span style="color:var(--cyan)">${pm}:${ps}/100m</span><span>${totalDist}km</span></div><div style="background:var(--s3);border-radius:3px;height:5px"><div style="background:var(--cyan);width:${bw}%;height:5px;border-radius:3px"></div></div></div>`;
     }).join('');
   })();
 
@@ -1054,19 +1055,19 @@ function renderStats() {
       <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:6px">Semana ${weeksDone}/${totalWeeks} del plan 🏁</div>
     </div>
     <div class="an-section">
-      <div class="an-title">🌡️ Zonas FC reales (FCmax ${fcMax}ppm)</div>
+      <div class="an-title">🌡️ Zonas FC — FCmax ${fcMax}ppm</div>
       ${zonesHtml}
     </div>
     <div class="an-section">
-      <div class="an-title">🏃 Tendencia Running (pace + FC)</div>
+      <div class="an-title">🏃 Running — pace y FC</div>
       ${runTrendHtml}
     </div>
     <div class="an-section">
-      <div class="an-title">🚴 Tendencia Bici (velocidad + FC)</div>
+      <div class="an-title">🚴 Bici — velocidad y FC</div>
       ${rideTrendHtml}
     </div>
     <div class="an-section">
-      <div class="an-title">🏊 Tendencia Natación (pace /100m + SWOLF)</div>
+      <div class="an-title">🏊 Natación — pace y SWOLF</div>
       ${swimTrendHtml}
     </div>
   </div>`;
