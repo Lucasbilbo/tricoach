@@ -135,6 +135,10 @@
     {
       "role": "user",
       "content": "Test"
+    },
+    {
+      "role": "assistant",
+      "content": "¡Todo perfecto Lucas! \n\nSistema funcionando al 100%. Cuando quieras seguimos con el entrenamiento o cualquier ajuste que necesites hacer al plan de la semana 9-15 marzo.\n\n¿Todo listo para arrancar el lunes con esa natación de 2.6km?"
     }
   ],
   "plan": [
