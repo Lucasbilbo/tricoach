@@ -112,7 +112,7 @@ header {
 .sb-tab.active { color:var(--cyan); border-bottom-color:var(--cyan); }
 /* ANALYTICS */
 .an-section { margin-bottom:10px; }
-.an-title { font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#dde; margin-bottom:8px; padding:0 2px; }
+.an-title { font-size:12px; font-weight:700; letter-spacing:0.02em; color:#dde; margin-bottom:8px; padding:0 2px; }
 .an-bars { display:flex; align-items:flex-end; gap:3px; height:60px; margin-bottom:3px; }
 .an-bar-wrap { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; height:100%; justify-content:flex-end; }
 .an-bar { width:100%; border-radius:3px 3px 0 0; min-height:2px; transition:height .3s; }
@@ -977,12 +977,14 @@ function renderStats() {
   const runTrendHtml = (() => {
     const wks = trendSorted.filter(w => w.Run.length > 0);
     if (wks.length < 2) return '<div style="font-size:11px;color:var(--muted);padding:6px 0">Necesitas más sesiones de running</div>';
-    const maxPace = Math.max(...wks.map(w => w.Run.reduce((s,a)=>s+(a.moving_time||0)/((a.distance||1)/1000),0)/w.Run.length));
+    const paces = wks.map(w => w.Run.reduce((s,a)=>s+(a.moving_time||0)/((a.distance||1)/1000),0)/w.Run.length);
+    const minPace = Math.min(...paces), maxPace = Math.max(...paces);
+    const paceRange = Math.max(maxPace - minPace, 30); // at least 30s range
     return wks.map(w => {
       const avgPaceSec = w.Run.reduce((s,a)=>s+(a.moving_time||0)/((a.distance||1)/1000),0)/w.Run.length;
       const avgFC = w.Run.filter(a=>a.average_heartrate).reduce((s,a)=>s+a.average_heartrate,0)/Math.max(w.Run.filter(a=>a.average_heartrate).length,1);
       const pm = Math.floor(avgPaceSec/60), ps = Math.round(avgPaceSec%60).toString().padStart(2,'0');
-      const bw = Math.max(15, Math.round((1-avgPaceSec/(maxPace*1.05))*100));
+      const bw = Math.max(10, Math.round((1-(avgPaceSec-minPace)/paceRange)*90)+10);
       const lbl = w.monday.getDate()+'/'+(w.monday.getMonth()+1);
       return `<div style="margin-bottom:5px"><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:2px"><span>${lbl}</span><span style="color:#69ff87">${pm}:${ps}/km</span><span>FC${Math.round(avgFC)||'—'}</span></div><div style="background:var(--s3);border-radius:3px;height:5px"><div style="background:#69ff87;width:${bw}%;height:5px;border-radius:3px"></div></div></div>`;
     }).join('');
