@@ -788,6 +788,9 @@ function renderSidebar() {
   </div>`;
 
   el.innerHTML = html;
+  // Sync to mobile panel if open
+  const mob = document.getElementById('mobileSidebarContent');
+  if (mob) mob.innerHTML = html;
 }
 
 // ─── SEND WEEK TO INTERVALS ───
@@ -1117,14 +1120,10 @@ function autoResize(el) { el.style.height='auto'; el.style.height=Math.min(el.sc
 function openMobileSidebar() {
   document.getElementById('mobileSidebarOverlay').classList.add('open');
   document.getElementById('mobileSidebarPanel').classList.add('open');
-  // Sync content from desktop sidebar
-  const desktopContent = document.getElementById('sidebarContent').innerHTML;
+  // Sync plan content
   const mobileContent = document.getElementById('mobileSidebarContent');
-  if (mobileContent) mobileContent.innerHTML = desktopContent;
-  // Sync stats
-  const desktopStats = document.getElementById('statsContent').innerHTML;
-  const mobileStats = document.getElementById('mobileSidebarStats');
-  if (mobileStats) mobileStats.innerHTML = desktopStats;
+  if (mobileContent) mobileContent.innerHTML = document.getElementById('sidebarContent').innerHTML;
+  switchMobileTab('plan');
 }
 function closeMobileSidebar() {
   document.getElementById('mobileSidebarOverlay').classList.remove('open');
