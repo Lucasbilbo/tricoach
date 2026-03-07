@@ -761,9 +761,8 @@ function renderHistory() {
     return;
   }
   const SPORT_EMOJI = { Swim:'🏊', Ride:'🚴', Run:'🏃', WeightTraining:'💪', VirtualRide:'🚴', VirtualRun:'🏃' };
-  const sorted = [...weekHistory].sort((a,b) => b.week.localeCompare(a.week));
 
-  const html = sorted.map(w => {
+  const histHtml = sorted.map(w => {
     const plan = (w.plan||[]).filter(d => d.sport);
     const planMins = plan.reduce((s,d) => s+(d.duration_min||0), 0);
     const weekActs = w.acts || [];
