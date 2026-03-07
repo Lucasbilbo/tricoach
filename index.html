@@ -672,11 +672,48 @@ function renderStats() {
     return `<div class="an-leg-item"><div class="an-leg-dot" style="background:${sports[k]?.color||'var(--muted)'}"></div><span>${sports[k]?.label||k}: <b>${h}h${min>0?min+'m':''}</b></span></div>`;
   }).join('');
 
+  // ── PREPARACIÓN OLÍMPICO ──
+  // Objetivos BASE para olímpico (distancias acumuladas mínimas en toda la preparación)
+  // Olímpico: 1.5km swim / 40km bike / 10km run
+  // Para llegar bien: ~60km swim / 1500km bike / 400km run acumulados en preparación
+  const GOALS = { Swim: 60000, Ride: 1500000, Run: 400000 }; // en metros
+  const GOAL_LABELS = { Swim: { label: '🏊 Natación', target: '60km', color: 'var(--cyan)' }, Ride: { label: '🚴 Bici', target: '1500km', color: 'var(--orange)' }, Run: { label: '🏃 Running', target: '400km', color: 'var(--green)' } };
+  
+  // Acumular distancias desde el inicio (usar todas las actividades de Strava)
+  const accDist = { Swim: 0, Ride: 0, Run: 0 };
+  activities.forEach(a => {
+    const k = a.sport_type || a.type;
+    if (accDist[k] !== undefined) accDist[k] += (a.distance || 0);
+  });
+
   const targetDate = new Date('2026-07-01');
   const totalWeeks = 16;
   const weeksLeft = Math.max(0, Math.round((targetDate - now)/(7*24*3600*1000)));
   const weeksDone = Math.max(0, totalWeeks - weeksLeft);
-  const pct = Math.min(100, Math.round((weeksDone/totalWeeks)*100));
+  
+  // Score global: media ponderada de los 3 deportes (swim 30%, bike 40%, run 30%)
+  const swPct = Math.min(100, Math.round((accDist.Swim / GOALS.Swim) * 100));
+  const biPct = Math.min(100, Math.round((accDist.Ride / GOALS.Ride) * 100));
+  const ruPct = Math.min(100, Math.round((accDist.Run  / GOALS.Run)  * 100));
+  const globalPct = Math.round(swPct * 0.3 + biPct * 0.4 + ruPct * 0.3);
+
+  const sportBars = ['Swim','Ride','Run'].map(k => {
+    const pct = k==='Swim'?swPct:k==='Ride'?biPct:ruPct;
+    const km = (accDist[k]/1000).toFixed(1);
+    const targetKm = GOALS[k]/1000;
+    const {label, color} = GOAL_LABELS[k];
+    return `<div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px">
+        <span style="color:${color}">${label}</span>
+        <span style="color:var(--muted)">${km}km / ${targetKm}km <b style="color:${color}">${pct}%</b></span>
+      </div>
+      <div class="an-goal-bar"><div class="an-goal-fill" style="width:${pct}%;background:${color}"></div></div>
+    </div>`;
+  }).join('');
+
+  // Semáforo estado
+  const statusColor = globalPct >= 70 ? 'var(--green)' : globalPct >= 40 ? 'var(--orange)' : 'var(--cyan)';
+  const statusText = globalPct >= 70 ? '🟢 En camino' : globalPct >= 40 ? '🟡 Construyendo base' : '🔵 Fase inicial';
 
   el.innerHTML = `<div style="padding:10px">
     <div class="an-section">
@@ -691,10 +728,13 @@ function renderStats() {
       </div>
     </div>
     <div class="an-section">
-      <div class="an-title">🎯 Olímpico julio 2026</div>
-      <div class="an-goal-row"><span>Semana ${weeksDone}/${totalWeeks}</span><span>${pct}%</span></div>
-      <div class="an-goal-bar"><div class="an-goal-fill" style="width:${pct}%"></div></div>
-      <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:4px">${weeksLeft} semanas para el objetivo 🏁</div>
+      <div class="an-title">🎯 Preparación Olímpico julio 2026</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-size:22px;font-weight:700;color:${statusColor}">${globalPct}%</span>
+        <span style="font-size:11px;color:var(--muted)">${statusText} · ${weeksLeft} sem.</span>
+      </div>
+      ${sportBars}
+      <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:6px">Semana ${weeksDone}/${totalWeeks} del plan 🏁</div>
     </div>
   </div>`;
 }
