@@ -443,7 +443,7 @@ CICLISMO: Bici carretera + bici montaña + spinning en casa. Sin potenciómetro 
 RUNNING: Nivel en desarrollo. Prioridad BASE: volumen bajo Z2, cadencia, no lesionarse.
 FUERZA: Gym disponible. Clave para prevención de lesiones en triatlón.
 
-ZONAS FC (FC máx 195): Z1 recuperación <117 | Z2 aeróbico base 117-137 | Z3 tempo 137-156 | Z4 umbral 156-176 | Z5 VO2max >176
+ZONAS FC: [SE CALCULAN DINÁMICAMENTE DESDE STRAVA — ver sección DATOS DINÁMICOS más abajo]
 
 ═══ LOGÍSTICA ═══
 SEMANA BILBAO: Todo disponible — piscina, bici exterior, running, gym.
@@ -640,6 +640,22 @@ MÁXIMO 4 steps. Un solo step de cada tipo.
     s += `\n\n--- ACTIVIDADES STRAVA RECIENTES (${activities.length} total) ---\n${sum}`;
   }
 
+  // ── DYNAMIC FC ZONES FROM STRAVA ──
+  if (activities && activities.length > 0) {
+    // Get real FCmax from Strava (highest ever recorded)
+    const fcMaxReal = Math.max(...activities.filter(a => a.max_heartrate > 0).map(a => a.max_heartrate), 0);
+    const fcMax = fcMaxReal > 150 ? Math.round(fcMaxReal) : 195; // fallback to 195
+    const z1 = Math.round(fcMax * 0.60);
+    const z2lo = Math.round(fcMax * 0.60);
+    const z2hi = Math.round(fcMax * 0.70);
+    const z3lo = Math.round(fcMax * 0.70);
+    const z3hi = Math.round(fcMax * 0.80);
+    const z4lo = Math.round(fcMax * 0.80);
+    const z4hi = Math.round(fcMax * 0.90);
+    const z5 = Math.round(fcMax * 0.90);
+    s += `\n\n--- ZONAS FC REALES (FCmax ${fcMax}ppm de Strava) ---\nZ1 recuperación: <${z1} | Z2 aeróbico base: ${z2lo}-${z2hi} | Z3 tempo: ${z3lo}-${z3hi} | Z4 umbral: ${z4lo}-${z4hi} | Z5 VO2max: >${z5}\nUSA estas zonas exactas al analizar FC de entrenamientos y al planificar intensidades.`;
+  }
+
   // Fatiga acumulada en system prompt
   if (activities.length > 0) {
     const n7 = new Date(); n7.setDate(n7.getDate()-7);
@@ -806,6 +822,103 @@ function renderHistory() {
     </div>`;
   }).join('');
 
+  // ── TREND DATA ──
+  const trendWeeks = [];
+  const trendMap = {};
+  activities.forEach(a => {
+    const d = new Date(a.start_date||'');
+    const monday = new Date(d); monday.setDate(d.getDate()-((d.getDay()+6)%7)); monday.setHours(0,0,0,0);
+    const key = monday.toISOString().slice(0,10);
+    if (!trendMap[key]) trendMap[key] = { key, monday, Run:[], Ride:[], Swim:[] };
+    const sport = a.sport_type||a.type;
+    if (trendMap[key][sport]) trendMap[key][sport].push(a);
+  });
+  const trendSorted = Object.values(trendMap).sort((a,b)=>a.key.localeCompare(b.key)).slice(-12);
+
+  // FC zones from Strava
+  const fcMaxReal = Math.max(...activities.filter(a=>a.max_heartrate>0).map(a=>a.max_heartrate), 195);
+  const fcMax = Math.round(fcMaxReal);
+  const zones = [
+    { label:'Z1', lo:0, hi:Math.round(fcMax*0.60), color:'#4a9eff' },
+    { label:'Z2', lo:Math.round(fcMax*0.60), hi:Math.round(fcMax*0.70), color:'#69ff87' },
+    { label:'Z3', lo:Math.round(fcMax*0.70), hi:Math.round(fcMax*0.80), color:'#ffb74d' },
+    { label:'Z4', lo:Math.round(fcMax*0.80), hi:Math.round(fcMax*0.90), color:'#ff6b35' },
+    { label:'Z5', lo:Math.round(fcMax*0.90), hi:999, color:'#ff4444' },
+  ];
+  const zonesHtml = zones.map(z =>
+    `<div style="display:flex;justify-content:space-between;font-size:11px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+      <span style="color:${z.color};font-weight:600">${z.label}</span>
+      <span style="color:var(--muted)">${z.lo>0?z.lo+'-':'>'}${z.hi<999?z.hi:'∞'} ppm</span>
+    </div>`
+  ).join('');
+
+  // Run trend (pace min/km + FC)
+  const runTrendHtml = (() => {
+    const weeks = trendSorted.filter(w => w.Run.length > 0);
+    if (weeks.length < 2) return '<div style="font-size:11px;color:var(--muted);padding:8px 0">Necesitas más sesiones de running</div>';
+    const maxPace = Math.max(...weeks.map(w => {
+      const avg = w.Run.reduce((s,a)=>s+(a.moving_time||0)/(a.distance||1),0)/w.Run.length;
+      return avg;
+    }));
+    return weeks.map(w => {
+      const avgPaceSec = w.Run.reduce((s,a)=>s+(a.moving_time||0)/((a.distance||1)/1000),0)/w.Run.length;
+      const avgFC = w.Run.filter(a=>a.average_heartrate).reduce((s,a)=>s+a.average_heartrate,0)/Math.max(w.Run.filter(a=>a.average_heartrate).length,1);
+      const paceMin = Math.floor(avgPaceSec/60), paceSec = Math.round(avgPaceSec%60).toString().padStart(2,'0');
+      const barW = Math.round((1 - avgPaceSec/(maxPace*1.1))*100);
+      const lbl = w.monday.getDate()+'/'+(w.monday.getMonth()+1);
+      return `<div style="margin-bottom:5px">
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:2px">
+          <span>${lbl}</span><span style="color:#69ff87">${paceMin}:${paceSec}/km</span><span>FC${Math.round(avgFC)||'—'}</span>
+        </div>
+        <div style="background:var(--s3);border-radius:3px;height:5px"><div style="background:#69ff87;width:${barW}%;height:5px;border-radius:3px"></div></div>
+      </div>`;
+    }).join('');
+  })();
+
+  // Ride trend (speed + FC)
+  const rideTrendHtml = (() => {
+    const weeks = trendSorted.filter(w => w.Ride.length > 0);
+    if (weeks.length < 2) return '<div style="font-size:11px;color:var(--muted);padding:8px 0">Necesitas más sesiones de bici</div>';
+    const maxSpeed = Math.max(...weeks.map(w => {
+      return w.Ride.reduce((s,a)=>s+((a.distance||0)/1000)/((a.moving_time||1)/3600),0)/w.Ride.length;
+    }));
+    return weeks.map(w => {
+      const avgSpeed = w.Ride.reduce((s,a)=>s+((a.distance||0)/1000)/((a.moving_time||1)/3600),0)/w.Ride.length;
+      const avgFC = w.Ride.filter(a=>a.average_heartrate).reduce((s,a)=>s+a.average_heartrate,0)/Math.max(w.Ride.filter(a=>a.average_heartrate).length,1);
+      const barW = Math.round((avgSpeed/maxSpeed)*100);
+      const lbl = w.monday.getDate()+'/'+(w.monday.getMonth()+1);
+      return `<div style="margin-bottom:5px">
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:2px">
+          <span>${lbl}</span><span style="color:#ff6b35">${avgSpeed.toFixed(1)}km/h</span><span>FC${Math.round(avgFC)||'—'}</span>
+        </div>
+        <div style="background:var(--s3);border-radius:3px;height:5px"><div style="background:#ff6b35;width:${barW}%;height:5px;border-radius:3px"></div></div>
+      </div>`;
+    }).join('');
+  })();
+
+  // Swim trend (pace /100m + swolf if available)
+  const swimTrendHtml = (() => {
+    const weeks = trendSorted.filter(w => w.Swim.length > 0);
+    if (weeks.length < 2) return '<div style="font-size:11px;color:var(--muted);padding:8px 0">Necesitas más sesiones de natación</div>';
+    const maxPace = Math.max(...weeks.map(w => {
+      return w.Swim.reduce((s,a)=>s+(a.moving_time||0)/((a.distance||1)/100),0)/w.Swim.length;
+    }));
+    return weeks.map(w => {
+      const avgPaceSec = w.Swim.reduce((s,a)=>s+(a.moving_time||0)/((a.distance||1)/100),0)/w.Swim.length;
+      const avgSwolf = w.Swim.filter(a=>a.average_cadence).reduce((s,a)=>s+a.average_cadence,0)/Math.max(w.Swim.filter(a=>a.average_cadence).length,1);
+      const paceMin = Math.floor(avgPaceSec/60), paceSec = Math.round(avgPaceSec%60).toString().padStart(2,'0');
+      const barW = Math.round((1-avgPaceSec/(maxPace*1.1))*100);
+      const lbl = w.monday.getDate()+'/'+(w.monday.getMonth()+1);
+      const swolfStr = avgSwolf > 0 ? `SWOLF ${Math.round(avgSwolf)}` : '—';
+      return `<div style="margin-bottom:5px">
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:2px">
+          <span>${lbl}</span><span style="color:var(--cyan)">${paceMin}:${paceSec}/100m</span><span>${swolfStr}</span>
+        </div>
+        <div style="background:var(--s3);border-radius:3px;height:5px"><div style="background:var(--cyan);width:${barW}%;height:5px;border-radius:3px"></div></div>
+      </div>`;
+    }).join('');
+  })();
+
   el.innerHTML = `<div style="padding:10px">${html}</div>`;
 }
 
@@ -963,6 +1076,22 @@ function renderStats() {
       </div>
       ${sportBars}
       <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:6px">Semana ${weeksDone}/${totalWeeks} del plan 🏁</div>
+    </div>
+    <div class="an-section">
+      <div class="an-title">🌡️ Zonas FC reales (FCmax ${fcMax}ppm)</div>
+      ${zonesHtml}
+    </div>
+    <div class="an-section">
+      <div class="an-title">🏃 Tendencia Running (pace + FC)</div>
+      ${runTrendHtml}
+    </div>
+    <div class="an-section">
+      <div class="an-title">🚴 Tendencia Bici (velocidad + FC)</div>
+      ${rideTrendHtml}
+    </div>
+    <div class="an-section">
+      <div class="an-title">🏊 Tendencia Natación (pace /100m + SWOLF)</div>
+      ${swimTrendHtml}
     </div>
   </div>`;
 }
