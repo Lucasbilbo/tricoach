@@ -560,6 +560,22 @@ MÁXIMO 4 steps. Un solo step de cada tipo.
 - desc natación siempre: "ZONA + MATERIAL" — ejemplos: "Z2 pull buoy", "Z3 palas+pull", "Z1 aletas", "Z4 libre"
 - NUNCA dos steps del mismo tipo en natación`;
 
+  // Inject Google Calendar events
+  if (calendarEvents && calendarEvents.length > 0) {
+    const DAYS_CAL = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+    const evStr = calendarEvents.map(e => {
+      const start = e.start?.dateTime || e.start?.date || '';
+      const end = e.end?.dateTime || e.end?.date || '';
+      const d = start.slice(0,10);
+      const dayName = d ? DAYS_CAL[new Date(d+'T12:00:00').getDay()] : '';
+      const timeStart = start.includes('T') ? start.slice(11,16) : 'todo el día';
+      const timeEnd = end.includes('T') ? end.slice(11,16) : '';
+      const timeStr = timeEnd ? `${timeStart}-${timeEnd}` : timeStart;
+      return `• ${dayName} ${d} ${timeStr}: ${e.summary||'(sin título)'}`;
+    }).join('\n');
+    s += `\n\n--- GOOGLE CALENDAR (próximos 14 días) ---\n${evStr}\nUSA este calendario para planificar entrenos en huecos reales. No pongas entrenos cuando hay eventos todo el día o reuniones largas.`;
+  }
+
   // Inject weekly memory
   if (weeklyMemory && weeklyMemory.length > 0) {
     const memStr = weeklyMemory.slice(-8).map(w =>
@@ -879,6 +895,13 @@ async function init() {
   try { weekPlan  = JSON.parse(localStorage.getItem(PLAN_KEY))    || []; } catch { weekPlan = []; }
 
   // Intenta cargar desde GitHub (sobreescribe localStorage si hay datos más recientes)
+  // Load Google tokens
+  const savedGTokens = localStorage.getItem('google_tokens');
+  if (savedGTokens) { try { googleTokens = JSON.parse(savedGTokens); } catch(e){} }
+  const savedGEvents = localStorage.getItem('google_events');
+  if (savedGEvents) { try { calendarEvents = JSON.parse(savedGEvents); } catch(e){} }
+  handleGoogleCallback();
+
   await loadHistoryFromGithub();
   // Carga actividades Strava automáticamente
   const newActs = await loadStravaAuto();
@@ -1164,6 +1187,66 @@ function buildMarkdownWorkout(day) {
   }
 
   return lines.join('\n').trim();
+}
+
+// ─── GOOGLE CALENDAR ───
+let googleTokens = null;
+let calendarEvents = [];
+
+async function connectGoogleCalendar() {
+  window.location.href = '/.netlify/functions/google-auth';
+}
+
+async function loadGoogleCalendar() {
+  if (!googleTokens) return;
+  try {
+    const params = new URLSearchParams({
+      access_token: googleTokens.access_token || '',
+      refresh_token: googleTokens.refresh_token || ''
+    });
+    const res = await fetch(`/.netlify/functions/google-calendar?${params}`);
+    const data = await res.json();
+    if (data.error) { console.warn('Calendar error:', data.error); return; }
+    if (data.new_access_token) {
+      googleTokens.access_token = data.new_access_token;
+      localStorage.setItem('google_tokens', JSON.stringify(googleTokens));
+    }
+    calendarEvents = data.events || [];
+    localStorage.setItem('google_events', JSON.stringify(calendarEvents));
+    updateCalendarBtn();
+    console.log(`✅ Calendar: ${calendarEvents.length} eventos cargados`);
+  } catch(e) { console.warn('Calendar load error:', e); }
+}
+
+function updateCalendarBtn() {
+  const btn = document.getElementById('calendarBtn');
+  if (!btn) return;
+  if (!googleTokens) {
+    btn.textContent = '📅 Conectar Google Calendar';
+    btn.style.background = 'var(--s3)';
+  } else {
+    btn.textContent = `📅 Cal. (${calendarEvents.length} eventos)`;
+    btn.style.background = 'rgba(105,255,135,0.15)';
+  }
+}
+
+function handleGoogleCallback() {
+  const url = new URL(window.location.href);
+  const tokensParam = url.searchParams.get('google_tokens');
+  const errorParam = url.searchParams.get('google_error');
+  if (tokensParam) {
+    try {
+      googleTokens = JSON.parse(decodeURIComponent(tokensParam));
+      localStorage.setItem('google_tokens', JSON.stringify(googleTokens));
+      // Clean URL
+      window.history.replaceState({}, '', '/');
+      loadGoogleCalendar();
+    } catch(e) { console.warn('Token parse error:', e); }
+  }
+  if (errorParam) {
+    console.warn('Google auth error:', errorParam);
+    window.history.replaceState({}, '', '/');
+  }
 }
 
 // ─── WEEKLY MEMORY ───
@@ -1496,6 +1579,23 @@ init();
     <button class="mobile-nav-btn orange" onclick="sendWeekToIntervals()" id="mobileGarminBtn">⌚ Garmin</button>
   </div>
 </div>
+
+<!-- GOOGLE CALENDAR BUTTON (sidebar) -->
+<script>
+// Inject calendar button into sidebar after Strava
+function injectCalendarBtn() {
+  const stravaBtn = document.getElementById('stravaBtn');
+  if (!stravaBtn) return;
+  const existing = document.getElementById('calendarBtn');
+  if (existing) return;
+  const btn = document.createElement('button');
+  btn.id = 'calendarBtn';
+  btn.style.cssText = 'width:100%;padding:8px 12px;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:#fff;margin-top:6px;';
+  btn.onclick = () => googleTokens ? loadGoogleCalendar() : connectGoogleCalendar();
+  stravaBtn.parentNode.insertBefore(btn, stravaBtn.nextSibling);
+  updateCalendarBtn();
+}
+</script>
 
 <!-- MOBILE SIDEBAR OVERLAY -->
 <div class="mobile-sidebar-overlay" id="mobileSidebarOverlay" onclick="closeMobileSidebar()"></div>
