@@ -905,9 +905,20 @@ async function init() {
   const savedGEvents = localStorage.getItem('google_events');
   if (savedGEvents) { try { calendarEvents = JSON.parse(savedGEvents); } catch(e){} }
   handleGoogleCallback();
-  if (googleTokens) {
-    const hBtn = document.getElementById('calendarHeaderBtn');
-    if (hBtn) { hBtn.style.display = 'flex'; document.getElementById('calendarHeaderLabel').textContent = `● ${calendarEvents.length} ev.`; }
+  // Show calendar header btn immediately
+  const hBtn = document.getElementById('calendarHeaderBtn');
+  if (hBtn) {
+    if (googleTokens) {
+      hBtn.style.display = 'flex';
+      const lbl = document.getElementById('calendarHeaderLabel');
+      if (lbl) lbl.textContent = calendarEvents.length > 0 ? `● ${calendarEvents.length} ev.` : '● ...';
+    } else {
+      hBtn.style.display = 'flex';
+      hBtn.style.background = 'rgba(100,100,100,0.15)';
+      hBtn.style.borderColor = 'rgba(100,100,100,0.3)';
+      hBtn.style.color = 'var(--muted)';
+      document.getElementById('calendarHeaderLabel').textContent = 'Cal.';
+    }
   }
 
   await loadHistoryFromGithub();
