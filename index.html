@@ -679,9 +679,11 @@ function renderStats() {
   const GOALS = { Swim: 60000, Ride: 1500000, Run: 400000 }; // en metros
   const GOAL_LABELS = { Swim: { label: '🏊 Natación', target: '60km', color: 'var(--cyan)' }, Ride: { label: '🚴 Bici', target: '1500km', color: 'var(--orange)' }, Run: { label: '🏃 Running', target: '400km', color: 'var(--green)' } };
   
-  // Acumular distancias desde el inicio (usar todas las actividades de Strava)
+  // Acumular distancias desde enero 2026 (inicio preparación olímpico)
+  const PREP_START = new Date('2026-01-01');
   const accDist = { Swim: 0, Ride: 0, Run: 0 };
   activities.forEach(a => {
+    if (new Date(a.start_date) < PREP_START) return;
     const k = a.sport_type || a.type;
     if (accDist[k] !== undefined) accDist[k] += (a.distance || 0);
   });
