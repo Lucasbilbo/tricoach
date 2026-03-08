@@ -374,14 +374,11 @@ textarea.json-in {
     <div class="hpill" id="stravaBtn" onclick="openModal('stravaModal')">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="#fc4c02"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.599h4.172L10.463 0l-7 13.828h4.169"/></svg>
       <span style="font-size:11px;font-weight:600">Strava</span>
-      <div class="dot dot-muted" id="stravaDot"></div>
     </div>
     <!-- Calendar -->
     <div class="hpill" id="calendarHeaderBtn" onclick="googleTokens ? loadGoogleCalendar() : connectGoogleCalendar()" style="display:none">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="#4285f4"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V9h14v10zM7 11h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2z"/></svg>
       <span style="font-size:11px;font-weight:600">Calendar</span>
-      <div class="dot dot-muted" id="calendarDot"></div>
-      <span id="calendarHeaderLabel" style="display:none"></span>
     </div>
   </div>
 </header>
@@ -1210,10 +1207,12 @@ async function loadStravaAuto() {
     }
   } catch(e) {
     console.warn('Strava auto-load error:', e);
-    const dot = document.getElementById('stravaDot');
-    if (dot) dot.className = 'dot dot-red';
     const btn2 = document.getElementById('stravaBtn');
-    if (btn2) btn2.title = 'Strava — error de sincronización. Pulsa para reconectar.';
+    if (btn2) {
+      btn2.title = 'Strava — error. Pulsa para reconectar.';
+      btn2.style.borderColor = 'rgba(255,68,68,0.5)';
+      btn2.style.background = 'rgba(255,68,68,0.08)';
+    }
   }
   return null;
 }
@@ -1237,7 +1236,11 @@ async function init() {
     if (googleTokens) {
       hBtn.style.display = 'flex';
       const lbl = document.getElementById('calendarHeaderLabel');
-      if (hBtn) hBtn.title = `Calendar ✓ · ${calendarEvents.length} eventos cargados`;
+      if (hBtn) {
+        hBtn.title = `Calendar ✓ · ${calendarEvents.length} eventos`;
+        hBtn.style.borderColor = 'rgba(105,255,135,0.5)';
+        hBtn.style.background = 'rgba(105,255,135,0.08)';
+      }
       const calDot = document.getElementById('calendarDot');
       if (calDot) calDot.className = 'dot dot-green';
     } else {
@@ -1245,10 +1248,12 @@ async function init() {
       hBtn.style.background = '';
       hBtn.style.borderColor = '';
       hBtn.style.color = '';
-      const calDotErr = document.getElementById('calendarDot');
-      if (calDotErr) calDotErr.className = 'dot dot-red';
       const calBtnErr = document.getElementById('calendarHeaderBtn');
-      if (calBtnErr) calBtnErr.title = 'Calendar — no conectado. Pulsa para conectar.';
+      if (calBtnErr) {
+        calBtnErr.title = 'Calendar — no conectado. Pulsa para conectar.';
+        calBtnErr.style.borderColor = 'rgba(255,68,68,0.5)';
+        calBtnErr.style.background = 'rgba(255,68,68,0.08)';
+      }
     }
   }
 
@@ -1670,7 +1675,11 @@ function setCalendarStatus(status) {
     if (hBtn) { hBtn.style.background = 'rgba(100,100,100,0.15)'; hBtn.style.borderColor = 'rgba(100,100,100,0.3)'; hBtn.style.color = 'var(--muted)'; }
   } else if (status === 'ok') {
     if (btn) { btn.textContent = `✅ Google Cal. (${calendarEvents.length} ev.)`; btn.style.background = 'rgba(105,255,135,0.15)'; btn.style.color = '#69ff87'; }
-    if (hBtn) hBtn.title = `Calendar ✓ · ${calendarEvents.length} eventos`;
+    if (hBtn) {
+      hBtn.title = `Calendar ✓ · ${calendarEvents.length} eventos`;
+      hBtn.style.borderColor = 'rgba(105,255,135,0.5)';
+      hBtn.style.background = 'rgba(105,255,135,0.08)';
+    }
     if (hBtn) { hBtn.style.background = 'rgba(105,255,135,0.12)'; hBtn.style.borderColor = 'rgba(105,255,135,0.3)'; hBtn.style.color = '#69ff87'; }
   } else if (status === 'error') {
     if (btn) { btn.textContent = '🔴 Calendar — pulsa para reconectar'; btn.style.background = 'rgba(255,68,68,0.15)'; btn.style.color = '#ff4444'; btn.onclick = () => connectGoogleCalendar(); }
