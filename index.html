@@ -1262,6 +1262,7 @@ async function init() {
   updateMemLabel(); updateMobileBar();
   renderSidebar();
   updateCountdown();
+  if (Notification.permission === 'granted') scheduleLocalNotifications();
 
   if (history.length === 0) {
     // First visit — show welcome without consuming tokens
@@ -2056,9 +2057,69 @@ function switchMobileTab(tab) {
   if (tab==='stats') { renderStats(); const s=document.getElementById('mobileSidebarStats'); if(s) s.innerHTML=document.getElementById('statsContent').innerHTML; }
 }
 
-// Register service worker
+// Register service worker + setup notifications
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').catch(e => console.warn('SW error:', e));
+  navigator.serviceWorker.register('/sw.js')
+    .then(reg => {
+      window._swReg = reg;
+      setupNotifications(reg);
+    })
+    .catch(e => console.warn('SW error:', e));
+}
+
+async function setupNotifications(reg) {
+  // Ask permission only if not yet granted
+  if (Notification.permission === 'default') {
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') return;
+  }
+  if (Notification.permission !== 'granted') return;
+  scheduleLocalNotifications();
+}
+
+function scheduleLocalNotifications() {
+  // Cancel previous timers
+  if (window._notifTimers) window._notifTimers.forEach(t => clearTimeout(t));
+  window._notifTimers = [];
+
+  const plan = (() => { try { return JSON.parse(localStorage.getItem('tricoach_v5_plan')) || []; } catch { return []; } })();
+  if (!plan.length) return;
+
+  const now = new Date();
+  const todayStr = now.toISOString().slice(0,10);
+  const tomorrowStr = new Date(now.getTime() + 86400000).toISOString().slice(0,10);
+
+  const sportEmoji = { Swim:'🏊', Run:'🏃', Ride:'🚴', Rest:'💤' };
+
+  plan.forEach(day => {
+    if (!day.date) return;
+    const em = sportEmoji[day.sport] || '🏋️';
+    const name = day.sport ? `${em} ${day.name} · ${day.duration_min}min` : '💤 Día de descanso';
+
+    // 20:00 day before
+    if (day.date === tomorrowStr) {
+      const target = new Date(now);
+      target.setHours(20, 0, 0, 0);
+      const ms = target - now;
+      if (ms > 0) {
+        window._notifTimers.push(setTimeout(() => {
+          new Notification('TriCoach AI — Mañana', { body: name, icon: '/icon-192.png', tag: 'tricoach-eve' });
+        }, ms));
+      }
+    }
+
+    // 08:00 same day
+    if (day.date === todayStr) {
+      const target = new Date(now);
+      target.setHours(8, 0, 0, 0);
+      const ms = target - now;
+      if (ms > 0) {
+        window._notifTimers.push(setTimeout(() => {
+          new Notification('TriCoach AI — Hoy', { body: name, icon: '/icon-192.png', tag: 'tricoach-day' });
+        }, ms));
+      }
+    }
+  });
 }
 
 init();
