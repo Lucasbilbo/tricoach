@@ -1375,18 +1375,16 @@ function renderSidebar() {
 
 // ─── SEND WEEK TO INTERVALS ───
 function buildMarkdownWorkout(day) {
-  // Intervals.icu parses description text to build structured workout steps
-  // Format: "- [desc] [duration]m [zone] intensity=[type]"
   const isSwim = day.sport === 'Swim';
   const steps = day.steps || [];
   const lines = [];
 
-  // Zone HR ranges from athlete profile
+  // For swim: convert distance_m to minutes (avg 2min/100m)
+  const swimMins = m => Math.round((m / 100) * 2);
   const zoneHR = { 1:'<119', 2:'119-139', 3:'139-159', 4:'159-179', 5:'>179' };
-  const zoneLabel = z => `Z${z} HR ${zoneHR[z]||''}`;
+  const zoneLabel = z => `Z${z} HR:${zoneHR[z]||''}`;
 
   if (steps.length === 0) {
-    // No steps — just send name + duration as simple description
     lines.push(day.name || '');
     if (day.duration_min) lines.push(`${day.duration_min} min`);
     return lines.join('\n').trim();
@@ -1398,7 +1396,8 @@ function buildMarkdownWorkout(day) {
     if (st.type === 'warmup') {
       lines.push('Warmup');
       if (isSwim && st.distance_m) {
-        lines.push(`- ${st.distance_m}m ${desc} intensity=warmup`);
+        // Use time in minutes, add distance as note in desc
+        lines.push(`- ${swimMins(st.distance_m)}m ${zoneLabel(st.zone||1)} ${st.distance_m}m ${desc} intensity=warmup`);
       } else {
         lines.push(`- ${st.duration_min||10}m ${zoneLabel(st.zone||1)} ${desc} intensity=warmup`);
       }
@@ -1408,9 +1407,10 @@ function buildMarkdownWorkout(day) {
       const reps = st.reps || 1;
       lines.push(`Main Set ${reps}x`);
       if (isSwim && st.distance_m) {
-        lines.push(`- ${st.distance_m}m ${desc} intensity=interval`);
-        if (st.rest_sec) lines.push(`- ${st.rest_sec}s descanso intensity=rest`);
-        else if (st.rest_m) lines.push(`- ${st.rest_m}m Z1 intensity=rest`);
+        const onMins = swimMins(st.distance_m);
+        const restMins = st.rest_sec ? Math.max(1, Math.round(st.rest_sec/60)) : 1;
+        lines.push(`- ${onMins}m ${zoneLabel(st.on_zone||3)} ${st.distance_m}m ${desc} intensity=interval`);
+        lines.push(`- ${restMins}m Z1 descanso intensity=rest`);
       } else {
         lines.push(`- ${st.on_min||4}m ${zoneLabel(st.on_zone||4)} ${desc} intensity=interval`);
         lines.push(`- ${st.off_min||2}m ${zoneLabel(st.off_zone||1)} recuperación intensity=rest`);
@@ -1420,7 +1420,7 @@ function buildMarkdownWorkout(day) {
     } else if (st.type === 'active') {
       lines.push('Main Set');
       if (isSwim && st.distance_m) {
-        lines.push(`- ${st.distance_m}m ${zoneLabel(st.zone||2)} ${desc} intensity=interval`);
+        lines.push(`- ${swimMins(st.distance_m)}m ${zoneLabel(st.zone||2)} ${st.distance_m}m ${desc} intensity=interval`);
       } else {
         lines.push(`- ${st.duration_min||20}m ${zoneLabel(st.zone||2)} ${desc} intensity=interval`);
       }
@@ -1429,7 +1429,7 @@ function buildMarkdownWorkout(day) {
     } else if (st.type === 'cooldown') {
       lines.push('Cooldown');
       if (isSwim && st.distance_m) {
-        lines.push(`- ${st.distance_m}m ${desc} intensity=cooldown`);
+        lines.push(`- ${swimMins(st.distance_m)}m ${zoneLabel(st.zone||1)} ${st.distance_m}m ${desc} intensity=cooldown`);
       } else {
         lines.push(`- ${st.duration_min||10}m ${zoneLabel(st.zone||1)} ${desc} intensity=cooldown`);
       }
