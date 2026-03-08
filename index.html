@@ -1509,8 +1509,10 @@ Responde SOLO con este formato exacto (sin markdown extra):
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        messages: [{ role: 'user', content: prompt }],
-        system: 'Eres TriCoach. Responde solo con el formato indicado, sin markdown extra.'
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 400,
+        system: 'Eres TriCoach. Responde solo con el formato indicado, sin markdown extra.',
+        messages: [{ role: 'user', content: prompt }]
       })
     });
     const data = await res.json();
