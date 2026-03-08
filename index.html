@@ -1155,7 +1155,13 @@ async function init() {
     banner.innerHTML = `💾 ${history.length} mensajes recuperados. Continuamos donde lo dejamos.`;
     document.getElementById('chat').prepend(banner);
     history.forEach(m => m.role==='user' ? addUserBubble(m.content) : addCoachBubble(m.content, false));
-    document.getElementById('chat').scrollTop = 9999;
+    // Scroll after render completes
+    const chat = document.getElementById('chat');
+    requestAnimationFrame(() => {
+      chat.scrollTop = chat.scrollHeight;
+      setTimeout(() => { chat.scrollTop = chat.scrollHeight; }, 100);
+      setTimeout(() => { chat.scrollTop = chat.scrollHeight; }, 400);
+    });
 
     // Mostrar botón si hay actividades nuevas — no lanzar auto
     if (newActs && newActs.length > 0) {
