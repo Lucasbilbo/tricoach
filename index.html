@@ -51,6 +51,11 @@ header {
 .logo-name span { color:var(--cyan); }
 .logo-tag { font-size:10px; color:var(--muted); letter-spacing:0.12em; text-transform:uppercase; }
 .header-right { margin-left:auto; display:flex; align-items:center; gap:7px; }
+.countdown-pill { display:flex; flex-direction:column; align-items:center; background:var(--s2); border-radius:8px; padding:3px 8px; cursor:default; }
+.countdown-weeks { font-size:13px; font-weight:700; color:#69ff87; line-height:1.2; }
+.countdown-label { font-size:9px; color:var(--muted); line-height:1.2; text-transform:uppercase; letter-spacing:0.5px; }
+.countdown-bar { width:100%; height:3px; background:var(--s3); border-radius:2px; margin-top:3px; }
+.countdown-bar-fill { height:3px; background:linear-gradient(90deg,#69ff87,#ffb74d); border-radius:2px; transition:width 0.3s; }
 .hbtn {
   display:flex; align-items:center; gap:5px;
   padding:6px 11px; border-radius:8px;
@@ -339,6 +344,11 @@ textarea.json-in {
     <div class="logo-tag">+ Intervals.icu + Garmin</div>
   </div>
   <div class="header-right">
+    <div class="countdown-pill" id="countdownPill" title="Semanas para el objetivo">
+      <div class="countdown-weeks" id="countdownWeeks">--</div>
+      <div class="countdown-label">sem. julio</div>
+      <div class="countdown-bar"><div class="countdown-bar-fill" id="countdownFill" style="width:0%"></div></div>
+    </div>
     <button class="hbtn hbtn-strava" onclick="openModal('stravaModal')" id="stravaBtn" title="">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.599h4.172L10.463 0l-7 13.828h4.169"/></svg>
       <span id="stravaLabel">Strava</span>
@@ -1217,6 +1227,7 @@ async function init() {
   ]);
   updateMemLabel(); updateMobileBar();
   renderSidebar();
+  updateCountdown();
 
   if (history.length === 0) {
     // First visit — show welcome without consuming tokens
@@ -1394,6 +1405,28 @@ function toggleDetail(idx) {
   const el = document.getElementById('detail-' + idx);
   if (!el) return;
   el.classList.toggle('open');
+}
+
+function updateCountdown() {
+  const now = new Date();
+  const targetA = new Date('2026-07-05'); // julio 2026 objetivo A
+  const seasonStart = new Date('2026-01-05'); // inicio temporada
+  const totalDays = (targetA - seasonStart) / 86400000;
+  const elapsed = (now - seasonStart) / 86400000;
+  const daysLeft = Math.max(0, Math.ceil((targetA - now) / 86400000));
+  const weeksLeft = Math.ceil(daysLeft / 7);
+  const pct = Math.min(100, Math.round((elapsed / totalDays) * 100));
+
+  const wEl = document.getElementById('countdownWeeks');
+  const fEl = document.getElementById('countdownFill');
+  if (!wEl) return;
+  wEl.textContent = weeksLeft > 0 ? weeksLeft : '🏁';
+  if (fEl) fEl.style.width = pct + '%';
+
+  // Color warning when close
+  if (weeksLeft <= 4) wEl.style.color = '#ff4444';
+  else if (weeksLeft <= 8) wEl.style.color = '#ffb74d';
+  else wEl.style.color = '#69ff87';
 }
 
 function saveNote(date, val) {
