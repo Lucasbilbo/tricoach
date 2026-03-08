@@ -1505,17 +1505,16 @@ Responde SOLO con este formato exacto (sin markdown extra):
 📊 Contexto: [1-2 frases sobre el nivel actual y qué disciplina tiene más margen de mejora]`;
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('/.netlify/functions/claude', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 300,
-        messages: [{ role: 'user', content: prompt }]
+        messages: [{ role: 'user', content: prompt }],
+        system: 'Eres TriCoach. Responde solo con el formato indicado, sin markdown extra.'
       })
     });
     const data = await res.json();
-    const text = data.content?.[0]?.text || 'Error al calcular';
+    const text = data.content?.[0]?.text || data.error || 'Error al calcular';
     el.innerHTML = '<div style="line-height:1.8;font-size:12px;color:var(--text)">' + text.split('\n').join('<br>') + '</div>';
   } catch(e) {
     el.innerHTML = '<span style="color:#ff4444">Error al conectar con el coach</span>';
