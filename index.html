@@ -1668,6 +1668,7 @@ async function sendWeekToIntervals() {
       return s + safeMins*60;
     }, 0) || (day.duration_min||60)*60; // fallback to day duration if steps empty
 
+    console.log(`[DEBUG] ${day.day} ${day.sport}: totalSecs=${totalSecs} (${(totalSecs/3600).toFixed(2)}h), steps=`, JSON.stringify(day.steps));
     const payload = {
       start_date_local: day.date + 'T07:00:00',
       type: day.sport,
