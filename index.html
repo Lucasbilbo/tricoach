@@ -51,11 +51,12 @@ header {
 .logo-name span { color:var(--cyan); }
 .logo-tag { font-size:10px; color:var(--muted); letter-spacing:0.12em; text-transform:uppercase; }
 .header-right { margin-left:auto; display:flex; align-items:center; gap:7px; }
-.countdown-pill { display:flex; flex-direction:column; align-items:center; background:var(--s2); border-radius:8px; padding:3px 8px; cursor:default; }
-.countdown-weeks { font-size:13px; font-weight:700; color:#69ff87; line-height:1.2; }
-.countdown-label { font-size:9px; color:var(--muted); line-height:1.2; text-transform:uppercase; letter-spacing:0.5px; }
-.countdown-bar { width:100%; height:3px; background:var(--s3); border-radius:2px; margin-top:3px; }
-.countdown-bar-fill { height:3px; background:linear-gradient(90deg,#69ff87,#ffb74d); border-radius:2px; transition:width 0.3s; }
+.countdown-pill { display:flex; align-items:center; gap:7px; background:none; padding:0; cursor:default; }
+.countdown-weeks { font-size:22px; font-weight:800; color:#69ff87; line-height:1; letter-spacing:-1px; }
+.countdown-right { display:flex; flex-direction:column; justify-content:center; gap:2px; }
+.countdown-label { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; line-height:1; }
+.countdown-bar { width:48px; height:4px; background:var(--s3); border-radius:2px; }
+.countdown-bar-fill { height:4px; background:linear-gradient(90deg,#69ff87,#ffb74d); border-radius:2px; transition:width 0.3s; }
 .hbtn {
   display:flex; align-items:center; gap:5px;
   padding:6px 11px; border-radius:8px;
@@ -344,10 +345,12 @@ textarea.json-in {
     <div class="logo-tag">+ Intervals.icu + Garmin</div>
   </div>
   <div class="header-right">
-    <div class="countdown-pill" id="countdownPill" title="Semanas para el objetivo">
+    <div class="countdown-pill" id="countdownPill" title="Semanas para el objetivo A — julio 2026">
       <div class="countdown-weeks" id="countdownWeeks">--</div>
-      <div class="countdown-label">sem. julio</div>
-      <div class="countdown-bar"><div class="countdown-bar-fill" id="countdownFill" style="width:0%"></div></div>
+      <div class="countdown-right">
+        <div class="countdown-label">sem. julio</div>
+        <div class="countdown-bar"><div class="countdown-bar-fill" id="countdownFill" style="width:0%"></div></div>
+      </div>
     </div>
     <button class="hbtn hbtn-strava" onclick="openModal('stravaModal')" id="stravaBtn" title="">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.599h4.172L10.463 0l-7 13.828h4.169"/></svg>
