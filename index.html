@@ -1052,8 +1052,8 @@ function renderStats() {
       });
 
       // Trend: compare first 3 weeks vs last 3 weeks
-      const firstFC = data.slice(0,3).reduce((s,d)=>s+d.fc,0)/3;
-      const lastFC = data.slice(-3).reduce((s,d)=>s+d.fc,0)/3;
+      const firstFC = data.slice(-3).reduce((s,d)=>s+d.fc,0)/3;
+      const lastFC = data.slice(0,3).reduce((s,d)=>s+d.fc,0)/3;
       const fcDiff = Math.round(lastFC - firstFC);
       const improving = fcDiff < -1;
       const stable = Math.abs(fcDiff) <= 1;
