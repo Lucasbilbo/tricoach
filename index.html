@@ -1269,6 +1269,10 @@ async function init() {
   updateMemLabel(); updateMobileBar();
   renderSidebar();
   updateCountdown();
+  // Show one-time notification banner if not yet decided
+  if ('Notification' in window && Notification.permission === 'default') {
+    setTimeout(showNotifBanner, 2000);
+  }
 
   if (history.length === 0) {
     // First visit — show welcome without consuming tokens
@@ -1548,9 +1552,7 @@ function renderSidebar() {
     <button class="send-week-btn" style="background:#c0392b;margin-top:6px;font-size:12px;" onclick="clearWeekFromIntervals()">
       🗑️ Limpiar semana en Intervals
     </button>
-    <button class="send-week-btn" id="notifBtn" style="background:var(--s3);margin-top:6px;font-size:12px;color:var(--muted);" onclick="requestNotifPermission()">
-      🔔 Activar notificaciones
-    </button>
+
 
     <div class="week-status" id="weekStatus"></div>
   </div>`;
@@ -2085,6 +2087,28 @@ async function setupNotifications(reg) {
     updateNotifBtn();
   }
   updateNotifBtn();
+}
+
+function showNotifBanner() {
+  if (document.getElementById('notifBanner')) return;
+  const banner = document.createElement('div');
+  banner.id = 'notifBanner';
+  banner.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,0.4);max-width:320px;width:90%';
+  const yesBtn = document.createElement('button');
+  yesBtn.textContent = 'Sí';
+  yesBtn.style.cssText = 'background:#69ff87;color:#000;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer';
+  yesBtn.onclick = () => { requestNotifPermission(); banner.remove(); };
+  const noBtn = document.createElement('button');
+  noBtn.textContent = '✕';
+  noBtn.style.cssText = 'background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:0 4px';
+  noBtn.onclick = () => banner.remove();
+  const txt = document.createElement('span');
+  txt.style.cssText = 'font-size:13px;color:var(--text);flex:1';
+  txt.textContent = '🔔 ¿Activar notificaciones del entreno?';
+  banner.appendChild(txt);
+  banner.appendChild(yesBtn);
+  banner.appendChild(noBtn);
+  document.body.appendChild(banner);
 }
 
 function updateNotifBtn() {
