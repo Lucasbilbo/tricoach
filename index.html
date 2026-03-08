@@ -1656,15 +1656,17 @@ async function sendWeekToIntervals() {
   for (const day of workouts) {
     const markdown = buildMarkdownWorkout(day);
     // Calcula duración estimada - para natación estimamos 2min/100m
+    const isSwimDay = day.sport === 'Swim';
     const totalSecs = (day.steps||[]).reduce((s,st) => {
-      const isSwim = day.sport === 'Swim';
       if (st.type==='interval') {
-        if (isSwim && st.distance_m) return s + (st.reps||1) * ((st.distance_m/100)*120 + (st.rest_sec||20));
+        if (isSwimDay && st.distance_m) return s + (st.reps||1) * ((st.distance_m/100)*120 + (st.rest_sec||20));
         return s + (st.reps||1)*((st.on_min||4)+(st.off_min||2))*60;
       }
-      if (isSwim && st.distance_m) return s + (st.distance_m/100)*120;
-      return s + (st.duration_min||10)*60;
-    }, 0);
+      if (isSwimDay && st.distance_m) return s + (st.distance_m/100)*120;
+      // Cap duration_min to 300 to avoid coach confusing meters with minutes
+      const safeMins = Math.min(st.duration_min||10, 300);
+      return s + safeMins*60;
+    }, 0) || (day.duration_min||60)*60; // fallback to day duration if steps empty
 
     const payload = {
       start_date_local: day.date + 'T07:00:00',
