@@ -556,6 +556,7 @@ REGLAS JSON:
   Continuo: {"type":"active","duration_min":30,"zone":2,"desc":"Z2 progresivo"}
   Intervalos: {"type":"interval","reps":5,"on_min":3,"on_zone":4,"off_min":2,"off_zone":1,"desc":"Z4 series 3min"}
 - desc: descriptivo y útil ("Z2 progresivo", "Series Z4 3min", "Rodaje suave")
+- zone/on_zone/off_zone: usar 1-5 (Z1 recuperación, Z2 aeróbico, Z3 tempo, Z4 umbral, Z5 VO2max)
 
 REGLAS CRÍTICAS NATACIÓN (limitación protocolo Garmin):
 MÁXIMO 4 steps. Un solo step de cada tipo.
@@ -1374,73 +1375,67 @@ function renderSidebar() {
 
 // ─── SEND WEEK TO INTERVALS ───
 function buildMarkdownWorkout(day) {
+  // Intervals.icu parses description text to build structured workout steps
+  // Format: "- [desc] [duration]m [zone] intensity=[type]"
   const isSwim = day.sport === 'Swim';
   const steps = day.steps || [];
   const lines = [];
 
-  const intensityMap = {
-    warmup: 'warmup',
-    active: 'active',
-    cooldown: 'cooldown',
-    interval: 'interval'
-  };
+  // Zone HR ranges from athlete profile
+  const zoneHR = { 1:'<119', 2:'119-139', 3:'139-159', 4:'159-179', 5:'>179' };
+  const zoneLabel = z => `Z${z} HR ${zoneHR[z]||''}`;
 
-  // Find interval steps to group them
-  let i = 0;
-  while (i < steps.length) {
-    const st = steps[i];
+  if (steps.length === 0) {
+    // No steps — just send name + duration as simple description
+    lines.push(day.name || '');
+    if (day.duration_min) lines.push(`${day.duration_min} min`);
+    return lines.join('\n').trim();
+  }
+
+  steps.forEach(st => {
     const desc = (st.desc || '').trim();
 
     if (st.type === 'warmup') {
       lines.push('Warmup');
       if (isSwim && st.distance_m) {
-        const km = (st.distance_m / 1000).toFixed(3).replace(/\.?0+$/, '');
-        lines.push(`- ${desc ? desc + " " : ""}${km}km intensity=warmup`);
+        lines.push(`- ${st.distance_m}m ${desc} intensity=warmup`);
       } else {
-        lines.push(`- ${desc ? desc + " " : ""}${st.duration_min||10}m Z${st.zone||1} intensity=warmup`);
+        lines.push(`- ${st.duration_min||10}m ${zoneLabel(st.zone||1)} ${desc} intensity=warmup`);
       }
       lines.push('');
 
     } else if (st.type === 'interval') {
       const reps = st.reps || 1;
+      lines.push(`Main Set ${reps}x`);
       if (isSwim && st.distance_m) {
-        const km = (st.distance_m / 1000).toFixed(3).replace(/\.?0+$/, '');
-        lines.push(`Main Set ${reps}x`);
-        lines.push(`- ${desc ? desc + " " : ""}${km}km intensity=interval`);
-        if (st.rest_sec) lines.push(`- ${st.rest_sec}s intensity=rest`);
-        else if (st.rest_m) {
-          const rkm = (st.rest_m / 1000).toFixed(3).replace(/\.?0+$/, '');
-          lines.push(`- ${rkm}km Z1 intensity=rest`);
-        }
+        lines.push(`- ${st.distance_m}m ${desc} intensity=interval`);
+        if (st.rest_sec) lines.push(`- ${st.rest_sec}s descanso intensity=rest`);
+        else if (st.rest_m) lines.push(`- ${st.rest_m}m Z1 intensity=rest`);
       } else {
-        lines.push(`Main Set ${reps}x`);
-        lines.push(`- ${desc ? desc + " " : ""}${st.on_min||4}m Z${st.on_zone||4} intensity=interval`);
-        lines.push(`- ${st.off_min||2}m Z${st.off_zone||1} intensity=recovery`);
+        lines.push(`- ${st.on_min||4}m ${zoneLabel(st.on_zone||4)} ${desc} intensity=interval`);
+        lines.push(`- ${st.off_min||2}m ${zoneLabel(st.off_zone||1)} recuperación intensity=rest`);
       }
       lines.push('');
 
     } else if (st.type === 'active') {
       lines.push('Main Set');
       if (isSwim && st.distance_m) {
-        const km = (st.distance_m / 1000).toFixed(3).replace(/\.?0+$/, '');
-        lines.push(`- ${desc ? desc + " " : ""}${km}km intensity=interval`);
+        lines.push(`- ${st.distance_m}m ${zoneLabel(st.zone||2)} ${desc} intensity=interval`);
       } else {
-        lines.push(`- ${desc ? desc + " " : ""}${st.duration_min||20}m Z${st.zone||2} intensity=interval`);
+        lines.push(`- ${st.duration_min||20}m ${zoneLabel(st.zone||2)} ${desc} intensity=interval`);
       }
       lines.push('');
 
     } else if (st.type === 'cooldown') {
       lines.push('Cooldown');
       if (isSwim && st.distance_m) {
-        const km = (st.distance_m / 1000).toFixed(3).replace(/\.?0+$/, '');
-        lines.push(`- ${desc ? desc + " " : ""}${km}km intensity=cooldown`);
+        lines.push(`- ${st.distance_m}m ${desc} intensity=cooldown`);
       } else {
-        lines.push(`- ${desc ? desc + " " : ""}${st.duration_min||10}m Z${st.zone||1} intensity=cooldown`);
+        lines.push(`- ${st.duration_min||10}m ${zoneLabel(st.zone||1)} ${desc} intensity=cooldown`);
       }
       lines.push('');
     }
-    i++;
-  }
+  });
 
   return lines.join('\n').trim();
 }
