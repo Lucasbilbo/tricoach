@@ -1044,7 +1044,7 @@ function renderStats() {
       const wks = trendSorted.filter(w => w[sp.key].filter(a=>a.average_heartrate&&a.distance>500).length > 0);
       if (wks.length < 3) return `<div style="margin-bottom:12px"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">${sp.label}</div><div style="font-size:10px;color:var(--muted)">Necesitas más sesiones con FC registrada</div></div>`;
 
-      const data = wks.map(w => {
+      const data = wks.slice().reverse().map(w => {
         const acts = w[sp.key].filter(a=>a.average_heartrate&&a.distance>500);
         const avgFC = acts.reduce((s,a)=>s+a.average_heartrate,0)/acts.length;
         const avgEffort = acts.reduce((s,a)=>s+sp.effortFn(a),0)/acts.length;
