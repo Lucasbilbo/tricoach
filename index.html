@@ -1409,10 +1409,10 @@ function toggleNoteInput(date, el) {
   div.id = 'note-input-' + date;
   div.style.cssText = 'padding:6px 8px 8px;background:var(--s2);border-top:1px solid var(--s3);margin:0';
   const currentNote = dayNotes[date] || '';
-  div.innerHTML = '<textarea id="note-ta-' + date + '" placeholder="Ej: rodilla molesta, mal sueño, viaje..." style="width:100%;background:var(--s3);color:var(--text);border:none;border-radius:6px;padding:6px 8px;font-size:12px;resize:none;outline:none;box-sizing:border-box;display:block" rows="2">' + currentNote + '</textarea>'
-    + '<div style="display:flex;gap:6px;margin-top:5px">'
-    + '<button onclick="saveNote(\'' + date + '\', document.getElementById(\'note-ta-' + date + '\').value); renderSidebar();" style="flex:1;background:#69ff87;color:#000;border:none;border-radius:5px;padding:5px 8px;font-size:11px;font-weight:600;cursor:pointer">Guardar</button>'
-    + '<button onclick="document.getElementById(\'note-input-' + date + '\').remove()" style="background:var(--s3);color:var(--muted);border:none;border-radius:5px;padding:5px 10px;font-size:11px;cursor:pointer">✕</button>'
+  div.innerHTML = '<div style="display:flex;gap:6px;align-items:flex-start">'
+    + '<textarea id="note-ta-' + date + '" placeholder="Nota del día..." style="flex:1;background:var(--s3);color:var(--text);border:none;border-radius:6px;padding:5px 7px;font-size:12px;resize:none;outline:none;box-sizing:border-box" rows="2">' + currentNote + '</textarea>'
+    + '<button onclick="saveNote(\'' + date + '\', document.getElementById(\'note-ta-' + date + '\').value); renderSidebar();" style="background:#69ff87;color:#000;border:none;border-radius:5px;padding:5px 8px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap">OK</button>'
+    + '<button onclick="document.getElementById(\'note-input-' + date + '\').remove()" style="background:var(--s3);color:var(--muted);border:none;border-radius:5px;padding:5px 7px;font-size:11px;cursor:pointer">✕</button>'
     + '</div>';
   // Insert right after the week-day row, not floating
   const dayRow = el.closest('.week-day');
