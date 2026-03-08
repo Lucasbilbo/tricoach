@@ -585,7 +585,7 @@ ANTES del JSON: una línea por día con emoji y razón:
 Emojis: 🏊 natación | 🚴 bici | 🏃 running | 💪 fuerza | 😴 descanso | 🔄 brick
 
 WEEK_PLAN_START
-[{"day":"Lunes","date":"YYYY-MM-DD","sport":"Run","name":"Nombre sesión","description":"Objetivo","duration_min":45,"steps":[{"type":"warmup","duration_min":10,"zone":1,"desc":"Calentamiento progresivo"},{"type":"active","duration_min":25,"zone":2,"desc":"Z2 continuo"},{"type":"cooldown","duration_min":10,"zone":1,"desc":"Vuelta calma"}]},{"day":"Martes","date":"YYYY-MM-DD","sport":null,"name":"Descanso","description":"Recuperación","duration_min":0,"steps":[]}]
+[{"day":"Lunes","date":"YYYY-MM-DD","sport":"Run","name":"Nombre sesión","description":"Objetivo","duration_min":45,"nutrition":"Agua + Evolytes en botella","steps":[{"type":"warmup","duration_min":10,"zone":1,"desc":"Calentamiento progresivo"},{"type":"active","duration_min":25,"zone":2,"desc":"Z2 continuo"},{"type":"cooldown","duration_min":10,"zone":1,"desc":"Vuelta calma"}]},{"day":"Martes","date":"YYYY-MM-DD","sport":null,"name":"Descanso","description":"Recuperación","duration_min":0,"steps":[]}]
 WEEK_PLAN_END
 
 REGLAS JSON:
@@ -596,6 +596,13 @@ REGLAS JSON:
   Intervalos: {"type":"interval","reps":5,"on_min":3,"on_zone":4,"off_min":2,"off_zone":1,"desc":"Z4 series 3min"}
 - desc: descriptivo y útil ("Z2 progresivo", "Series Z4 3min", "Rodaje suave")
 - zone/on_zone/off_zone: usar 1-5 (Z1 recuperación, Z2 aeróbico, Z3 tempo, Z4 umbral, Z5 VO2max)
+- nutrition: OBLIGATORIO en cada sesión con sport. String corto con estrategia de hidratación y nutrición:
+  <45min → "Solo agua"
+  45-75min → "Agua + Evolytes en botella"
+  >75min → "Agua + Evolytes + 1 gel Decathlon cada 45min durante esfuerzo"
+  Brick o sesión larga >2h → "Agua + Evolytes + gel cada 30-40min + gel extra en transición bici→carrera"
+  Natación → "Solo agua antes y después (no se come en el agua)"
+  Descanso → omitir campo nutrition
 
 REGLAS CRÍTICAS NATACIÓN (limitación protocolo Garmin):
 MÁXIMO 4 steps. Un solo step de cada tipo.
@@ -1528,9 +1535,15 @@ function renderSidebar() {
       const stepsHtml = steps.length > 0
         ? steps.map((s,i) => `<div class="wd-detail-step"><span class="wd-detail-step-num">${i+1}.</span><span>${s.desc || s.type || ''} ${s.duration_sec ? Math.round(s.duration_sec/60)+'min' : ''} ${s.distance_m ? s.distance_m+'m' : ''}</span></div>`).join('')
         : `<div style="color:var(--muted);font-size:11px">${day.description || 'Sin detalle'}</div>`;
+      const nutritionHtml = day.nutrition
+        ? `<div style="margin:6px 0 2px;padding:6px 8px;background:rgba(0,229,255,0.06);border-radius:6px;border-left:2px solid var(--cyan)">
+            <span style="font-size:10px;color:var(--cyan);font-weight:600;text-transform:uppercase;letter-spacing:0.5px">💧 Nutrición</span>
+            <div style="font-size:11px;color:var(--text);margin-top:2px">${day.nutrition}</div>
+          </div>` : '';
       detailHtml = `<div class="wd-detail" id="detail-${idx}">
         <div class="wd-detail-meta">${tagsHtml}</div>
         ${stepsHtml}
+        ${nutritionHtml}
       </div>`;
     }
     const note = dayNotes[day.date] || '';
