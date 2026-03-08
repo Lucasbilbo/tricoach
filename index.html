@@ -1388,7 +1388,8 @@ function updateMobileBar() {
 }
 
 function updateMemLabel() {
-  document.getElementById('memLabel').textContent = history.length > 1 ? `${history.length} msgs` : 'Memoria activa';
+  const el = document.getElementById('memLabel');
+  if (el) el.textContent = history.length > 1 ? `${history.length} msgs` : 'Memoria activa';
 }
 
 // ─── MODALS ───
