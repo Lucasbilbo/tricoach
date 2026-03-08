@@ -1193,6 +1193,11 @@ function renderStats() {
       <div class="an-title">❤️ Eficiencia cardiovascular</div>
       ${cardioEffHtml}
     </div>
+    <div class="an-section">
+      <div class="an-title">🏁 Simulación olímpico</div>
+      <div id="simResult" style="font-size:11px;color:var(--muted);margin-bottom:8px">Pulsa para estimar tu tiempo actual en distancia olímpica basado en tus datos Strava.</div>
+      <button onclick="runOlympicSim()" style="width:100%;padding:8px;background:linear-gradient(135deg,var(--cyan),#0099cc);color:#000;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">🏁 Simular mi olímpico</button>
+    </div>
   </div>`;
 }
 
@@ -1458,6 +1463,63 @@ function toggleDetail(idx) {
   const el = document.getElementById('detail-' + idx);
   if (!el) return;
   el.classList.toggle('open');
+}
+
+async function runOlympicSim() {
+  const el = document.getElementById('simResult');
+  if (!el) return;
+  el.innerHTML = '<span style="color:var(--cyan)">⏳ Analizando tus datos...</span>';
+
+  // Gather last 8 weeks of data per sport
+  const now = new Date();
+  const recentActs = activities.filter(a => (now - new Date(a.start_date)) < 56 * 86400000);
+
+  const runs = recentActs.filter(a => a.type === 'Run' && a.distance > 1000 && a.moving_time > 0);
+  const rides = recentActs.filter(a => a.type === 'Ride' && a.distance > 5000 && a.moving_time > 0);
+  const swims = recentActs.filter(a => a.type === 'Swim' && a.distance > 200 && a.moving_time > 0);
+
+  const avgPace = arr => arr.length ? arr.reduce((s,a) => s + a.moving_time / (a.distance/1000), 0) / arr.length : 0;
+  const avgSwimPace = arr => arr.length ? arr.reduce((s,a) => s + a.moving_time / (a.distance/100), 0) / arr.length : 0;
+  const avgSpeed = arr => arr.length ? arr.reduce((s,a) => s + (a.distance/1000) / (a.moving_time/3600), 0) / arr.length : 0;
+
+  const runPaceSec = avgPace(runs);   // sec/km
+  const rideSpeedKmh = avgSpeed(rides); // km/h
+  const swimPaceSec = avgSwimPace(swims); // sec/100m
+
+  // Build prompt for Claude
+  const prompt = `Eres TriCoach analizando el rendimiento actual de Lucas para estimar su tiempo en un triatlón olímpico (1500m natación + 40km bici + 10km carrera).
+
+DATOS REALES ÚLTIMAS 8 SEMANAS (Strava):
+- Natación: ${swims.length} sesiones. Pace medio: ${swimPaceSec > 0 ? Math.floor(swimPaceSec/60)+':'+(Math.round(swimPaceSec%60)).toString().padStart(2,'0')+'/100m' : 'sin datos'}
+- Bici: ${rides.length} sesiones. Velocidad media: ${rideSpeedKmh > 0 ? rideSpeedKmh.toFixed(1)+'km/h' : 'sin datos'}
+- Running: ${runs.length} sesiones. Pace medio: ${runPaceSec > 0 ? Math.floor(runPaceSec/60)+':'+(Math.round(runPaceSec%60)).toString().padStart(2,'0')+'/km' : 'sin datos'}
+
+IMPORTANTE: Estos son datos de entrenamiento, no de carrera. Ajusta para esfuerzo de competición (+5-10% intensidad). Considera que Lucas lleva solo ~3 meses entrenando triatlón.
+
+Responde SOLO con este formato exacto (sin markdown extra):
+🏊 Natación 1500m: X:XX min
+🚴 Bici 40km: X:XX h
+🏃 Running 10km: XX:XX min
+⏱️ Transiciones: ~X min
+🏁 TOTAL ESTIMADO: X:XX h
+📊 Contexto: [1-2 frases sobre el nivel actual y qué disciplina tiene más margen de mejora]`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 300,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content?.[0]?.text || 'Error al calcular';
+    el.innerHTML = '<div style="line-height:1.8;font-size:12px;color:var(--text)">' + text.split('\n').join('<br>') + '</div>';
+  } catch(e) {
+    el.innerHTML = '<span style="color:#ff4444">Error al conectar con el coach</span>';
+  }
 }
 
 function updateCountdown() {
