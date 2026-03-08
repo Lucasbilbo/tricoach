@@ -1548,6 +1548,9 @@ function renderSidebar() {
     <button class="send-week-btn" style="background:#c0392b;margin-top:6px;font-size:12px;" onclick="clearWeekFromIntervals()">
       🗑️ Limpiar semana en Intervals
     </button>
+    <button class="send-week-btn" id="notifBtn" style="background:var(--s3);margin-top:6px;font-size:12px;color:var(--muted);" onclick="requestNotifPermission()">
+      🔔 Activar notificaciones
+    </button>
 
     <div class="week-status" id="weekStatus"></div>
   </div>`;
@@ -2076,12 +2079,35 @@ if ('serviceWorker' in navigator) {
 const VAPID_PUBLIC_KEY = 'BPo-RENe73ae4JY1b1X4PiHhTxeE1_cZcoveJ5wrQsXGZPRDc83oX7hgy8MRk5fnFaIBkcJodi-FgMbXCTitSU8';
 
 async function setupNotifications(reg) {
-  if (Notification.permission === 'default') {
-    const perm = await Notification.requestPermission();
-    if (perm !== 'granted') return;
+  // Only auto-subscribe if already granted (iOS requires user gesture for first request)
+  if (Notification.permission === 'granted') {
+    await subscribeToPush(reg);
+    updateNotifBtn();
   }
-  if (Notification.permission !== 'granted') return;
-  await subscribeToPush(reg);
+  updateNotifBtn();
+}
+
+function updateNotifBtn() {
+  const btn = document.getElementById('notifBtn');
+  if (!btn) return;
+  if (Notification.permission === 'granted') {
+    btn.textContent = '🔔 Notificaciones activas';
+    btn.style.background = 'rgba(105,255,135,0.1)';
+    btn.style.color = '#69ff87';
+    btn.style.borderColor = 'rgba(105,255,135,0.3)';
+  } else if (Notification.permission === 'denied') {
+    btn.textContent = '🔕 Notificaciones bloqueadas';
+    btn.style.color = 'var(--muted)';
+  }
+}
+
+async function requestNotifPermission() {
+  if (Notification.permission === 'granted') return;
+  const perm = await Notification.requestPermission();
+  if (perm === 'granted' && window._swReg) {
+    await subscribeToPush(window._swReg);
+  }
+  updateNotifBtn();
 }
 
 async function subscribeToPush(reg) {
