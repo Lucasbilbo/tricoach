@@ -819,75 +819,6 @@ function renderHistory() {
     </div>`;
   }).join('');
 
-  // ── CARDIAC EFFICIENCY ──
-  // For each sport: FC at equivalent effort over time → lower FC = better adaptation
-  const cardioEffHtml = (() => {
-    const sports = [
-      { key:'Run', label:'🏃 Running', color:'#69ff87', 
-        effortFn: a => a.distance>0 ? (a.moving_time/a.distance)*1000 : 0, // sec/km
-        effortLabel: v => { const m=Math.floor(v/60),s=Math.round(v%60); return `${m}:${s.toString().padStart(2,'0')}/km`; }
-      },
-      { key:'Ride', label:'🚴 Bici', color:'#ff6b35',
-        effortFn: a => a.distance>0&&a.moving_time>0 ? (a.distance/1000)/(a.moving_time/3600) : 0, // km/h
-        effortLabel: v => `${v.toFixed(1)}km/h`
-      },
-      { key:'Swim', label:'🏊 Natación', color:'var(--cyan)',
-        effortFn: a => a.distance>0 ? (a.moving_time/(a.distance/100)) : 0, // sec/100m
-        effortLabel: v => { const m=Math.floor(v/60),s=Math.round(v%60); return `${m}:${s.toString().padStart(2,'0')}/100m`; }
-      }
-    ];
-
-    return sports.map(sp => {
-      const wks = trendSorted.filter(w => w[sp.key].filter(a=>a.average_heartrate&&a.distance>500).length > 0);
-      if (wks.length < 3) return `<div style="margin-bottom:12px"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">${sp.label}</div><div style="font-size:10px;color:var(--muted)">Necesitas más sesiones con FC registrada</div></div>`;
-
-      const data = wks.map(w => {
-        const acts = w[sp.key].filter(a=>a.average_heartrate&&a.distance>500);
-        const avgFC = acts.reduce((s,a)=>s+a.average_heartrate,0)/acts.length;
-        const avgEffort = acts.reduce((s,a)=>s+sp.effortFn(a),0)/acts.length;
-        return { lbl: w.monday.getDate()+'/'+(w.monday.getMonth()+1), fc: Math.round(avgFC), effort: avgEffort, monday: w.monday };
-      });
-
-      // Trend: compare first 3 weeks vs last 3 weeks
-      const firstFC = data.slice(0,3).reduce((s,d)=>s+d.fc,0)/3;
-      const lastFC = data.slice(-3).reduce((s,d)=>s+d.fc,0)/3;
-      const fcDiff = Math.round(lastFC - firstFC);
-      const improving = fcDiff < -1;
-      const stable = Math.abs(fcDiff) <= 1;
-      const trendIcon = improving ? '📉' : stable ? '➡️' : '📈';
-      const trendColor = improving ? '#69ff87' : stable ? '#ffb74d' : '#ff4444';
-      const trendText = improving ? `FC bajó ${Math.abs(fcDiff)}ppm` : stable ? 'FC estable' : `FC subió ${fcDiff}ppm`;
-
-      const minFC = Math.min(...data.map(d=>d.fc));
-      const maxFC = Math.max(...data.map(d=>d.fc));
-      const fcRange = Math.max(maxFC - minFC, 5);
-
-      const bars = data.map(d => {
-        // Bar width: higher FC = longer bar (worse), lower FC = shorter (better)
-        const bw = Math.round(((d.fc - minFC) / fcRange) * 70) + 15;
-        const barColor = d.fc <= (minFC + fcRange*0.33) ? '#69ff87' : d.fc <= (minFC + fcRange*0.66) ? '#ffb74d' : '#ff4444';
-        return `<div style="margin-bottom:3px">
-          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:1px">
-            <span>${d.lbl}</span>
-            <span style="color:${barColor}">FC ${d.fc}</span>
-            <span>${sp.effortLabel(d.effort)}</span>
-          </div>
-          <div style="background:var(--s3);border-radius:3px;height:4px">
-            <div style="background:${barColor};width:${bw}%;height:4px;border-radius:3px"></div>
-          </div>
-        </div>`;
-      }).join('');
-
-      return `<div style="margin-bottom:14px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-          <span style="font-size:11px;font-weight:600;color:var(--text)">${sp.label}</span>
-          <span style="font-size:10px;color:${trendColor}">${trendIcon} ${trendText} vs inicio</span>
-        </div>
-        ${bars}
-      </div>`;
-    }).join('');
-  })();
-
   el.innerHTML = `<div style="padding:10px">${histHtml}</div>`;
 }
 
@@ -1088,6 +1019,75 @@ function renderStats() {
       const bw = Math.max(10, Math.round((1-(avgPaceSec-minP)/rangeP)*90)+10);
       const lbl = w.monday.getDate()+'/'+(w.monday.getMonth()+1);
       return `<div style="margin-bottom:5px"><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:2px"><span>${lbl}</span><span style="color:var(--cyan)">${pm}:${ps}/100m</span><span>${totalDist}km</span></div><div style="background:var(--s3);border-radius:3px;height:5px"><div style="background:var(--cyan);width:${bw}%;height:5px;border-radius:3px"></div></div></div>`;
+    }).join('');
+  })();
+
+  // ── CARDIAC EFFICIENCY ──
+  // For each sport: FC at equivalent effort over time → lower FC = better adaptation
+  const cardioEffHtml = (() => {
+    const sports = [
+      { key:'Run', label:'🏃 Running', color:'#69ff87', 
+        effortFn: a => a.distance>0 ? (a.moving_time/a.distance)*1000 : 0, // sec/km
+        effortLabel: v => { const m=Math.floor(v/60),s=Math.round(v%60); return `${m}:${s.toString().padStart(2,'0')}/km`; }
+      },
+      { key:'Ride', label:'🚴 Bici', color:'#ff6b35',
+        effortFn: a => a.distance>0&&a.moving_time>0 ? (a.distance/1000)/(a.moving_time/3600) : 0, // km/h
+        effortLabel: v => `${v.toFixed(1)}km/h`
+      },
+      { key:'Swim', label:'🏊 Natación', color:'var(--cyan)',
+        effortFn: a => a.distance>0 ? (a.moving_time/(a.distance/100)) : 0, // sec/100m
+        effortLabel: v => { const m=Math.floor(v/60),s=Math.round(v%60); return `${m}:${s.toString().padStart(2,'0')}/100m`; }
+      }
+    ];
+
+    return sports.map(sp => {
+      const wks = trendSorted.filter(w => w[sp.key].filter(a=>a.average_heartrate&&a.distance>500).length > 0);
+      if (wks.length < 3) return `<div style="margin-bottom:12px"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">${sp.label}</div><div style="font-size:10px;color:var(--muted)">Necesitas más sesiones con FC registrada</div></div>`;
+
+      const data = wks.map(w => {
+        const acts = w[sp.key].filter(a=>a.average_heartrate&&a.distance>500);
+        const avgFC = acts.reduce((s,a)=>s+a.average_heartrate,0)/acts.length;
+        const avgEffort = acts.reduce((s,a)=>s+sp.effortFn(a),0)/acts.length;
+        return { lbl: w.monday.getDate()+'/'+(w.monday.getMonth()+1), fc: Math.round(avgFC), effort: avgEffort, monday: w.monday };
+      });
+
+      // Trend: compare first 3 weeks vs last 3 weeks
+      const firstFC = data.slice(0,3).reduce((s,d)=>s+d.fc,0)/3;
+      const lastFC = data.slice(-3).reduce((s,d)=>s+d.fc,0)/3;
+      const fcDiff = Math.round(lastFC - firstFC);
+      const improving = fcDiff < -1;
+      const stable = Math.abs(fcDiff) <= 1;
+      const trendIcon = improving ? '📉' : stable ? '➡️' : '📈';
+      const trendColor = improving ? '#69ff87' : stable ? '#ffb74d' : '#ff4444';
+      const trendText = improving ? `FC bajó ${Math.abs(fcDiff)}ppm` : stable ? 'FC estable' : `FC subió ${fcDiff}ppm`;
+
+      const minFC = Math.min(...data.map(d=>d.fc));
+      const maxFC = Math.max(...data.map(d=>d.fc));
+      const fcRange = Math.max(maxFC - minFC, 5);
+
+      const bars = data.map(d => {
+        // Bar width: higher FC = longer bar (worse), lower FC = shorter (better)
+        const bw = Math.round(((d.fc - minFC) / fcRange) * 70) + 15;
+        const barColor = d.fc <= (minFC + fcRange*0.33) ? '#69ff87' : d.fc <= (minFC + fcRange*0.66) ? '#ffb74d' : '#ff4444';
+        return `<div style="margin-bottom:3px">
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:1px">
+            <span>${d.lbl}</span>
+            <span style="color:${barColor}">FC ${d.fc}</span>
+            <span>${sp.effortLabel(d.effort)}</span>
+          </div>
+          <div style="background:var(--s3);border-radius:3px;height:4px">
+            <div style="background:${barColor};width:${bw}%;height:4px;border-radius:3px"></div>
+          </div>
+        </div>`;
+      }).join('');
+
+      return `<div style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-size:11px;font-weight:600;color:var(--text)">${sp.label}</span>
+          <span style="font-size:10px;color:${trendColor}">${trendIcon} ${trendText} vs inicio</span>
+        </div>
+        ${bars}
+      </div>`;
     }).join('');
   })();
 
