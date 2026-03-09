@@ -69,7 +69,7 @@ exports.handler = async (event) => {
       const content = Buffer.from(JSON.stringify({ history, plan }, null, 2)).toString('base64');
 
       const body = {
-        message: `Update history ${new Date().toISOString().slice(0, 16)}`,
+        message: `[skip ci] Update history ${new Date().toISOString().slice(0, 16)}`,
         content,
         branch: BRANCH,
         ...(sha && { sha })

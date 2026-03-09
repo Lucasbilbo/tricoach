@@ -33,7 +33,7 @@ exports.handler = async (event) => {
 
     // Save subscription
     const content = Buffer.from(JSON.stringify({ subscription, updatedAt: new Date().toISOString() })).toString('base64');
-    const body = { message: 'Update push subscription', content, ...(sha ? { sha } : {}) };
+    const body = { message: '[skip ci] Update push subscription', content, ...(sha ? { sha } : {}) };
 
     const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${FILE}`, {
       method: 'PUT',
