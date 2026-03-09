@@ -47,26 +47,10 @@ header {
   display:flex; align-items:center; justify-content:center;
   font-size:17px; flex-shrink:0;
 }
-.logo-name { font-family:'Syne',sans-serif; font-weight:800; font-size:18px; letter-spacing:0.04em; text-transform:uppercase; line-height:1; }
 .logo-name span { color:var(--cyan); }
 .logo-tag { font-size:10px; color:var(--muted); letter-spacing:0.12em; text-transform:uppercase; }
 .header-right { margin-left:auto; display:flex; align-items:center; gap:6px; }
-.hpill {
-  display:flex; align-items:center; gap:5px;
-  padding:5px 10px; border-radius:20px;
-  background:var(--s2); border:1px solid var(--s3);
-  font-size:11px; font-weight:600; color:var(--text);
-  cursor:pointer; white-space:nowrap;
-}
-.hpill:hover { border-color:var(--s4,#555); }
-.hpill .dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
-.hpill .dot-green { background:#69ff87; box-shadow:0 0 5px #69ff87aa; }
-.hpill .dot-red { background:#ff4444; box-shadow:0 0 5px #ff4444aa; }
 .hpill .dot-muted { background:var(--muted); }
-.hpill-goal { gap:6px; }
-.hpill-goal .goal-num { font-size:18px; font-weight:800; color:#69ff87; letter-spacing:-0.5px; line-height:1; }
-.hpill-goal .goal-text { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:0.8px; line-height:1.3; }
-.hpill-goal .goal-bar { width:36px; height:3px; background:var(--s3); border-radius:2px; margin-top:2px; }
 .hpill-goal .goal-bar-fill { height:3px; background:linear-gradient(90deg,#69ff87,#ffb74d); border-radius:2px; transition:width 0.3s; }
 .countdown-pill { display:flex; align-items:center; gap:7px; background:none; padding:0; cursor:default; }
 .countdown-weeks { font-size:22px; font-weight:800; color:#69ff87; line-height:1; letter-spacing:-1px; }
@@ -80,7 +64,6 @@ header {
   font-size:12px; font-weight:500; cursor:pointer;
   transition:all .2s; border:none; font-family:'DM Sans',sans-serif;
 }
-.hbtn-strava { background:rgba(252,76,2,0.15); border:1px solid rgba(252,76,2,0.3); color:#fc4c02; }
 .hbtn-strava:hover { background:rgba(252,76,2,0.25); }
 .mem-pill {
   display:flex; align-items:center; gap:5px;
@@ -112,10 +95,6 @@ header {
 .stat-row { display:flex; justify-content:space-between; margin-bottom:3px; }
 .stat-l { font-size:11px; color:var(--muted); }
 .stat-v { font-size:12px; font-weight:500; }
-.act-item {
-  background:var(--s2); border:1px solid var(--border); border-radius:8px;
-  padding:8px 10px; margin-bottom:5px; cursor:pointer; transition:all .2s;
-}
 .act-item:hover { border-color:rgba(0,229,255,.3); background:var(--s3); }
 .act-head { display:flex; align-items:center; gap:6px; margin-bottom:2px; }
 .act-type { font-size:9px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; padding:2px 6px; border-radius:3px; }
@@ -126,12 +105,10 @@ header {
 .act-date { font-size:10px; color:var(--muted); margin-left:auto; }
 .act-name { font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:2px; }
 .act-stats { font-size:11px; color:var(--muted); }
-.sb-empty { text-align:center; padding:18px 12px; color:var(--muted); font-size:12px; line-height:1.6; }
 .sb-empty .ei { font-size:26px; margin-bottom:6px; }
 
 /* SIDEBAR TABS */
 .sb-tabs { display:flex; border-bottom:1px solid var(--border); }
-.sb-tab { flex:1; padding:8px 0; text-align:center; font-size:10px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); cursor:pointer; border-bottom:2px solid transparent; transition:all .2s; }
 .sb-tab.active { color:var(--cyan); border-bottom-color:var(--cyan); }
 /* ANALYTICS */
 .an-section { margin-bottom:10px; }
@@ -141,7 +118,6 @@ header {
 .an-bar { width:100%; border-radius:3px 3px 0 0; min-height:2px; transition:height .3s; }
 .an-bar-lbl { font-size:8px; color:var(--muted); white-space:nowrap; }
 .an-donut-row { display:flex; align-items:center; gap:10px; padding:4px 0; }
-.an-donut { position:relative; width:60px; height:60px; flex-shrink:0; }
 .an-donut svg { transform:rotate(-90deg); }
 .an-legend { flex:1; }
 .an-leg-item { display:flex; align-items:center; gap:5px; margin-bottom:4px; font-size:11px; }
@@ -151,16 +127,12 @@ header {
 .an-goal-row { display:flex; justify-content:space-between; font-size:10px; color:var(--muted); margin-bottom:6px; }
 
 /* DAY DETAIL EXPAND */
-.wd-detail { display:none; background:var(--s1); border-top:1px solid var(--border); padding:8px 10px; font-size:11px; line-height:1.6; }
 .wd-detail.open { display:block; }
 .wd-detail-step { display:flex; gap:6px; align-items:flex-start; margin-bottom:3px; color:#ccd; }
 .wd-detail-step-num { color:var(--cyan); font-weight:700; flex-shrink:0; }
 .wd-detail-meta { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:6px; }
 .wd-detail-tag { font-size:10px; padding:2px 7px; border-radius:10px; background:var(--s3); color:#aab; }
-.week-day { cursor:pointer; }
-.week-day:hover { background:rgba(255,255,255,0.03); border-radius:6px; }
-
-/* WEEKLY PLAN CARD in sidebar */
+.week-day:last-child { border-bottom:none; }
 .week-card {
   background:rgba(0,229,255,0.06);
   border:1px solid rgba(0,229,255,0.2);
@@ -171,28 +143,10 @@ header {
   letter-spacing:0.12em; text-transform:uppercase; color:var(--cyan);
   margin-bottom:8px;
 }
-.week-day {
-  display:flex; align-items:center; gap:7px;
-  padding:5px 0; border-bottom:1px solid rgba(0,229,255,0.08);
-  font-size:11px;
-}
-.week-day:last-child { border-bottom:none; }
 .wd-day { color:var(--muted); width:28px; flex-shrink:0; }
 .wd-sport { font-size:9px; font-weight:600; padding:1px 5px; border-radius:3px; flex-shrink:0; }
 .wd-name { flex:1; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.send-week-btn {
-  width:100%; margin-top:10px; padding:9px;
-  border-radius:8px; border:none;
-  background:linear-gradient(135deg,var(--intervals),#ff6b2b);
-  color:#fff; font-family:'DM Sans',sans-serif;
-  font-size:12px; font-weight:600; cursor:pointer;
-  transition:all .2s; display:flex; align-items:center;
-  justify-content:center; gap:6px;
-}
-.send-week-btn:hover { filter:brightness(1.1); }
 .send-week-btn:disabled { opacity:.4; cursor:not-allowed; }
-.week-status { font-size:11px; text-align:center; margin-top:6px; min-height:16px; }
-.week-status.ok  { color:var(--green); }
 .week-status.err { color:#ff5252; }
 
 /* CHAT */
@@ -207,8 +161,6 @@ header {
 }
 #chat::-webkit-scrollbar { width:3px; }
 #chat::-webkit-scrollbar-thumb { background:var(--s3); border-radius:2px; }
-.msg { display:flex; gap:9px; animation:su .3s ease; }
-@keyframes su { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
 .msg.user { flex-direction:row-reverse; }
 .av {
   width:32px; height:32px; border-radius:8px;
@@ -217,34 +169,18 @@ header {
 }
 .av-coach { background:linear-gradient(135deg,var(--cyan),var(--green)); }
 .av-user  { background:linear-gradient(135deg,var(--orange),#ff8a50); }
-.bub {
-  max-width:80%; padding:11px 15px;
-  border-radius:13px; font-size:14px; line-height:1.65; font-weight:300;
-}
-.bub-coach { background:var(--s1); border:1px solid var(--border); border-top-left-radius:3px; }
-.bub-user  { background:linear-gradient(135deg,rgba(255,87,34,.18),rgba(255,87,34,.08)); border:1px solid rgba(255,87,34,.22); border-top-right-radius:3px; }
-.bub strong { color:var(--cyan); font-weight:600; }
-.bub em { color:var(--green); font-style:normal; font-weight:500; }
-.bub h3 { font-family:'Syne',sans-serif; font-weight:700; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; color:var(--cyan); margin:9px 0 4px; }
-.bub ul { padding-left:16px; margin:5px 0; }
 .bub li { margin:3px 0; }
 
 /* Typing */
+.bub-coach { background:var(--s1); border:1px solid var(--border); border-top-left-radius:3px; }
+.bub-user  { background:linear-gradient(135deg,rgba(255,87,34,.18),rgba(255,87,34,.08)); border:1px solid rgba(255,87,34,.22); border-top-right-radius:3px; }
 .typing { display:flex; align-items:center; gap:5px; padding:11px 15px; }
-.dot { width:6px; height:6px; border-radius:50%; background:var(--cyan); animation:pop 1.1s ease infinite; }
-.dot:nth-child(2) { animation-delay:.18s; background:var(--green); }
 .dot:nth-child(3) { animation-delay:.36s; background:var(--orange); }
 @keyframes pop { 0%,100%{opacity:.3;transform:scale(.8)} 50%{opacity:1;transform:scale(1)} }
 
 /* INPUT */
 .input-area { padding:10px 0 14px; border-top:1px solid var(--border); }
 .chips { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:9px; }
-.chip {
-  padding:5px 11px; border-radius:15px;
-  background:var(--s2); border:1px solid var(--border);
-  color:var(--muted); font-size:12px; cursor:pointer;
-  transition:all .2s; font-family:'DM Sans',sans-serif;
-}
 .chip:hover { background:rgba(0,229,255,.08); border-color:rgba(0,229,255,.35); color:var(--cyan); }
 .input-row { display:flex; gap:7px; align-items:flex-end; }
 textarea#input {
@@ -256,14 +192,6 @@ textarea#input {
 }
 textarea#input::placeholder { color:var(--muted); }
 textarea#input:focus { border-color:rgba(0,229,255,.35); }
-.send-btn {
-  width:42px; height:42px; border-radius:10px; border:none;
-  background:linear-gradient(135deg,var(--cyan),var(--green));
-  color:var(--bg); cursor:pointer; display:flex;
-  align-items:center; justify-content:center; flex-shrink:0;
-  transition:transform .15s, opacity .2s;
-}
-.send-btn:hover { transform:scale(1.06); }
 .send-btn:disabled { opacity:.35; cursor:not-allowed; transform:none; }
 
 /* MODAL */
@@ -297,21 +225,16 @@ textarea.json-in {
   display:flex; align-items:center; gap:7px; margin-bottom:12px;
 }
 .mobile-week-bar{display:none;align-items:center;justify-content:space-between;gap:10px;padding:10px 0 4px;border-top:1px solid var(--border);}
-.mobile-send-btn{flex:1;padding:11px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--intervals),#ff6b2b);color:#fff;font-family:"DM Sans",sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
 .mobile-send-btn:disabled{opacity:.4;cursor:not-allowed;}
 .mobile-plan-info{font-size:12px;color:var(--muted);white-space:nowrap;}
 
 /* MOBILE BOTTOM NAV */
 .mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:50;background:rgba(8,12,18,0.97);border-top:1px solid var(--border);padding:8px 16px 20px;}
 .mobile-nav-row{display:flex;gap:8px;margin-bottom:8px;}
-.mobile-nav-btn{flex:1;padding:10px 6px;border-radius:10px;border:1px solid var(--border);background:var(--s2);color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;font-family:"DM Sans",sans-serif;display:flex;align-items:center;justify-content:center;gap:4px;transition:all .2s;}
-.mobile-nav-btn.active{background:rgba(0,229,255,0.12);border-color:rgba(0,229,255,0.4);color:var(--cyan);}
 .mobile-nav-btn.orange{background:linear-gradient(135deg,var(--intervals),#ff6b2b);border:none;color:#fff;}
 
 /* MOBILE SIDEBAR OVERLAY */
-.mobile-sidebar-overlay{display:none;position:fixed;inset:0;z-index:44;background:rgba(0,0,0,0.85);}
 .mobile-sidebar-overlay.open{display:block;}
-.mobile-sidebar-panel{position:fixed;left:0;top:0;right:0;bottom:0;width:100vw;z-index:45;background:var(--s1);border-right:none;transform:translateX(-100%);transition:transform .3s ease;overflow-y:auto;display:flex;flex-direction:column;padding-bottom:calc(80px + env(safe-area-inset-bottom));box-sizing:border-box;}
 .mobile-sidebar-panel.open{transform:translateX(0);}
 .mobile-sidebar-close{padding:12px 16px;padding-top:calc(env(safe-area-inset-top) + 12px);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600;position:sticky;top:0;background:var(--s1);z-index:10;flex-shrink:0;}
 
@@ -1227,14 +1150,13 @@ async function loadStravaAuto() {
     const data = await res.json();
     if (Array.isArray(data) && data.length > 0) {
       // Detect new activities since last check
-      const lastCheck = localStorage.getItem('strava_last_check') || '1970-01-01';
+      const lastCheck = localStorage.getItem(STRAVA_CHECK_KEY) || '1970-01-01';
       const cutoff7 = new Date(); cutoff7.setDate(cutoff7.getDate() - 7);
       const newActs = data.filter(a => new Date(a.start_date) > new Date(lastCheck) && new Date(a.start_date) > cutoff7);
       activities = data;
       localStorage.setItem(ACT_KEY, JSON.stringify(activities));
-      localStorage.setItem('strava_last_check', new Date().toISOString());
+      localStorage.setItem(STRAVA_CHECK_KEY, new Date().toISOString());
       updateMemLabel();
-      console.log(`✅ Strava: ${data.length} actividades cargadas, ${newActs.length} nuevas`);
       // Actualizar indicador
       const now = new Date();
       const hm = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
@@ -1263,9 +1185,9 @@ async function init() {
 
   // Intenta cargar desde GitHub (sobreescribe localStorage si hay datos más recientes)
   // Load Google tokens
-  const savedGTokens = localStorage.getItem('google_tokens');
+  const savedGTokens = localStorage.getItem(GOOGLE_TOKENS_KEY);
   if (savedGTokens) { try { googleTokens = JSON.parse(savedGTokens); } catch(e){} }
-  const savedGEvents = localStorage.getItem('google_events');
+  const savedGEvents = localStorage.getItem(GOOGLE_EVENTS_KEY);
   if (savedGEvents) { try { calendarEvents = JSON.parse(savedGEvents); } catch(e){} }
   handleGoogleCallback();
   // Show calendar header btn immediately
@@ -1775,13 +1697,12 @@ async function loadGoogleCalendar() {
     }
     if (data.new_access_token) {
       googleTokens.access_token = data.new_access_token;
-      localStorage.setItem('google_tokens', JSON.stringify(googleTokens));
+      localStorage.setItem(GOOGLE_TOKENS_KEY, JSON.stringify(googleTokens));
     }
     calendarEvents = data.events || [];
-    localStorage.setItem('google_events', JSON.stringify(calendarEvents));
+    localStorage.setItem(GOOGLE_EVENTS_KEY, JSON.stringify(calendarEvents));
     updateCalendarBtn();
     setCalendarStatus('ok');
-    console.log(`✅ Calendar: ${calendarEvents.length} eventos cargados`);
   } catch(e) {
     console.warn('Calendar load error:', e);
     setCalendarStatus('error');
@@ -1830,12 +1751,12 @@ function updateCalendarBtn() {
 
 function handleGoogleCallback() {
   const url = new URL(window.location.href);
-  const tokensParam = url.searchParams.get('google_tokens');
+  const tokensParam = url.searchParams.get(GOOGLE_TOKENS_KEY);
   const errorParam = url.searchParams.get('google_error');
   if (tokensParam) {
     try {
       googleTokens = JSON.parse(decodeURIComponent(tokensParam));
-      localStorage.setItem('google_tokens', JSON.stringify(googleTokens));
+      localStorage.setItem(GOOGLE_TOKENS_KEY, JSON.stringify(googleTokens));
       // Clean URL
       window.history.replaceState({}, '', '/');
       loadGoogleCalendar();
@@ -1979,8 +1900,6 @@ async function sendWeekToIntervals() {
       const safeMins = Math.min(st.duration_min||10, 300);
       return s + safeMins*60;
     }, 0) || (day.duration_min||60)*60; // fallback to day duration if steps empty
-
-    console.log(`[DEBUG] ${day.day} ${day.sport}: totalSecs=${totalSecs} (${(totalSecs/3600).toFixed(2)}h), steps=`, JSON.stringify(day.steps));
     const payload = {
       start_date_local: day.date + 'T07:00:00',
       type: day.sport,
@@ -2270,7 +2189,6 @@ async function subscribeToPush(reg) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ subscription: sub })
     });
-    console.log('Push subscription updated OK');
   } catch(e) {
     console.warn('Push subscribe error:', e);
   }
