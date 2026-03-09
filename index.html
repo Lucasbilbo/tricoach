@@ -47,10 +47,26 @@ header {
   display:flex; align-items:center; justify-content:center;
   font-size:17px; flex-shrink:0;
 }
+.logo-name { font-family:'Syne',sans-serif; font-weight:800; font-size:18px; letter-spacing:0.04em; text-transform:uppercase; line-height:1; }
 .logo-name span { color:var(--cyan); }
 .logo-tag { font-size:10px; color:var(--muted); letter-spacing:0.12em; text-transform:uppercase; }
 .header-right { margin-left:auto; display:flex; align-items:center; gap:6px; }
+.hpill {
+  display:flex; align-items:center; gap:5px;
+  padding:5px 10px; border-radius:20px;
+  background:var(--s2); border:1px solid var(--s3);
+  font-size:11px; font-weight:600; color:var(--text);
+  cursor:pointer; white-space:nowrap;
+}
+.hpill:hover { border-color:var(--s4,#555); }
+.hpill .dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.hpill .dot-green { background:#69ff87; box-shadow:0 0 5px #69ff87aa; }
+.hpill .dot-red { background:#ff4444; box-shadow:0 0 5px #ff4444aa; }
 .hpill .dot-muted { background:var(--muted); }
+.hpill-goal { gap:6px; }
+.hpill-goal .goal-num { font-size:18px; font-weight:800; color:#69ff87; letter-spacing:-0.5px; line-height:1; }
+.hpill-goal .goal-text { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:0.8px; line-height:1.3; }
+.hpill-goal .goal-bar { width:36px; height:3px; background:var(--s3); border-radius:2px; margin-top:2px; }
 .hpill-goal .goal-bar-fill { height:3px; background:linear-gradient(90deg,#69ff87,#ffb74d); border-radius:2px; transition:width 0.3s; }
 .countdown-pill { display:flex; align-items:center; gap:7px; background:none; padding:0; cursor:default; }
 .countdown-weeks { font-size:22px; font-weight:800; color:#69ff87; line-height:1; letter-spacing:-1px; }
@@ -64,6 +80,7 @@ header {
   font-size:12px; font-weight:500; cursor:pointer;
   transition:all .2s; border:none; font-family:'DM Sans',sans-serif;
 }
+.hbtn-strava { background:rgba(252,76,2,0.15); border:1px solid rgba(252,76,2,0.3); color:#fc4c02; }
 .hbtn-strava:hover { background:rgba(252,76,2,0.25); }
 .mem-pill {
   display:flex; align-items:center; gap:5px;
@@ -95,6 +112,10 @@ header {
 .stat-row { display:flex; justify-content:space-between; margin-bottom:3px; }
 .stat-l { font-size:11px; color:var(--muted); }
 .stat-v { font-size:12px; font-weight:500; }
+.act-item {
+  background:var(--s2); border:1px solid var(--border); border-radius:8px;
+  padding:8px 10px; margin-bottom:5px; cursor:pointer; transition:all .2s;
+}
 .act-item:hover { border-color:rgba(0,229,255,.3); background:var(--s3); }
 .act-head { display:flex; align-items:center; gap:6px; margin-bottom:2px; }
 .act-type { font-size:9px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; padding:2px 6px; border-radius:3px; }
@@ -105,10 +126,12 @@ header {
 .act-date { font-size:10px; color:var(--muted); margin-left:auto; }
 .act-name { font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:2px; }
 .act-stats { font-size:11px; color:var(--muted); }
+.sb-empty { text-align:center; padding:18px 12px; color:var(--muted); font-size:12px; line-height:1.6; }
 .sb-empty .ei { font-size:26px; margin-bottom:6px; }
 
 /* SIDEBAR TABS */
 .sb-tabs { display:flex; border-bottom:1px solid var(--border); }
+.sb-tab { flex:1; padding:8px 0; text-align:center; font-size:10px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); cursor:pointer; border-bottom:2px solid transparent; transition:all .2s; }
 .sb-tab.active { color:var(--cyan); border-bottom-color:var(--cyan); }
 /* ANALYTICS */
 .an-section { margin-bottom:10px; }
@@ -118,6 +141,7 @@ header {
 .an-bar { width:100%; border-radius:3px 3px 0 0; min-height:2px; transition:height .3s; }
 .an-bar-lbl { font-size:8px; color:var(--muted); white-space:nowrap; }
 .an-donut-row { display:flex; align-items:center; gap:10px; padding:4px 0; }
+.an-donut { position:relative; width:60px; height:60px; flex-shrink:0; }
 .an-donut svg { transform:rotate(-90deg); }
 .an-legend { flex:1; }
 .an-leg-item { display:flex; align-items:center; gap:5px; margin-bottom:4px; font-size:11px; }
@@ -127,12 +151,16 @@ header {
 .an-goal-row { display:flex; justify-content:space-between; font-size:10px; color:var(--muted); margin-bottom:6px; }
 
 /* DAY DETAIL EXPAND */
+.wd-detail { display:none; background:var(--s1); border-top:1px solid var(--border); padding:8px 10px; font-size:11px; line-height:1.6; }
 .wd-detail.open { display:block; }
 .wd-detail-step { display:flex; gap:6px; align-items:flex-start; margin-bottom:3px; color:#ccd; }
 .wd-detail-step-num { color:var(--cyan); font-weight:700; flex-shrink:0; }
 .wd-detail-meta { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:6px; }
 .wd-detail-tag { font-size:10px; padding:2px 7px; border-radius:10px; background:var(--s3); color:#aab; }
-.week-day:last-child { border-bottom:none; }
+.week-day { cursor:pointer; }
+.week-day:hover { background:rgba(255,255,255,0.03); border-radius:6px; }
+
+/* WEEKLY PLAN CARD in sidebar */
 .week-card {
   background:rgba(0,229,255,0.06);
   border:1px solid rgba(0,229,255,0.2);
@@ -143,10 +171,28 @@ header {
   letter-spacing:0.12em; text-transform:uppercase; color:var(--cyan);
   margin-bottom:8px;
 }
+.week-day {
+  display:flex; align-items:center; gap:7px;
+  padding:5px 0; border-bottom:1px solid rgba(0,229,255,0.08);
+  font-size:11px;
+}
+.week-day:last-child { border-bottom:none; }
 .wd-day { color:var(--muted); width:28px; flex-shrink:0; }
 .wd-sport { font-size:9px; font-weight:600; padding:1px 5px; border-radius:3px; flex-shrink:0; }
 .wd-name { flex:1; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.send-week-btn {
+  width:100%; margin-top:10px; padding:9px;
+  border-radius:8px; border:none;
+  background:linear-gradient(135deg,var(--intervals),#ff6b2b);
+  color:#fff; font-family:'DM Sans',sans-serif;
+  font-size:12px; font-weight:600; cursor:pointer;
+  transition:all .2s; display:flex; align-items:center;
+  justify-content:center; gap:6px;
+}
+.send-week-btn:hover { filter:brightness(1.1); }
 .send-week-btn:disabled { opacity:.4; cursor:not-allowed; }
+.week-status { font-size:11px; text-align:center; margin-top:6px; min-height:16px; }
+.week-status.ok  { color:var(--green); }
 .week-status.err { color:#ff5252; }
 
 /* CHAT */
@@ -161,6 +207,8 @@ header {
 }
 #chat::-webkit-scrollbar { width:3px; }
 #chat::-webkit-scrollbar-thumb { background:var(--s3); border-radius:2px; }
+.msg { display:flex; gap:9px; animation:su .3s ease; }
+@keyframes su { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
 .msg.user { flex-direction:row-reverse; }
 .av {
   width:32px; height:32px; border-radius:8px;
@@ -169,18 +217,34 @@ header {
 }
 .av-coach { background:linear-gradient(135deg,var(--cyan),var(--green)); }
 .av-user  { background:linear-gradient(135deg,var(--orange),#ff8a50); }
+.bub {
+  max-width:80%; padding:11px 15px;
+  border-radius:13px; font-size:14px; line-height:1.65; font-weight:300;
+}
+.bub-coach { background:var(--s1); border:1px solid var(--border); border-top-left-radius:3px; }
+.bub-user  { background:linear-gradient(135deg,rgba(255,87,34,.18),rgba(255,87,34,.08)); border:1px solid rgba(255,87,34,.22); border-top-right-radius:3px; }
+.bub strong { color:var(--cyan); font-weight:600; }
+.bub em { color:var(--green); font-style:normal; font-weight:500; }
+.bub h3 { font-family:'Syne',sans-serif; font-weight:700; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; color:var(--cyan); margin:9px 0 4px; }
+.bub ul { padding-left:16px; margin:5px 0; }
 .bub li { margin:3px 0; }
 
 /* Typing */
-.bub-coach { background:var(--s1); border:1px solid var(--border); border-top-left-radius:3px; }
-.bub-user  { background:linear-gradient(135deg,rgba(255,87,34,.18),rgba(255,87,34,.08)); border:1px solid rgba(255,87,34,.22); border-top-right-radius:3px; }
 .typing { display:flex; align-items:center; gap:5px; padding:11px 15px; }
+.dot { width:6px; height:6px; border-radius:50%; background:var(--cyan); animation:pop 1.1s ease infinite; }
+.dot:nth-child(2) { animation-delay:.18s; background:var(--green); }
 .dot:nth-child(3) { animation-delay:.36s; background:var(--orange); }
 @keyframes pop { 0%,100%{opacity:.3;transform:scale(.8)} 50%{opacity:1;transform:scale(1)} }
 
 /* INPUT */
 .input-area { padding:10px 0 14px; border-top:1px solid var(--border); }
 .chips { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:9px; }
+.chip {
+  padding:5px 11px; border-radius:15px;
+  background:var(--s2); border:1px solid var(--border);
+  color:var(--muted); font-size:12px; cursor:pointer;
+  transition:all .2s; font-family:'DM Sans',sans-serif;
+}
 .chip:hover { background:rgba(0,229,255,.08); border-color:rgba(0,229,255,.35); color:var(--cyan); }
 .input-row { display:flex; gap:7px; align-items:flex-end; }
 textarea#input {
@@ -192,6 +256,14 @@ textarea#input {
 }
 textarea#input::placeholder { color:var(--muted); }
 textarea#input:focus { border-color:rgba(0,229,255,.35); }
+.send-btn {
+  width:42px; height:42px; border-radius:10px; border:none;
+  background:linear-gradient(135deg,var(--cyan),var(--green));
+  color:var(--bg); cursor:pointer; display:flex;
+  align-items:center; justify-content:center; flex-shrink:0;
+  transition:transform .15s, opacity .2s;
+}
+.send-btn:hover { transform:scale(1.06); }
 .send-btn:disabled { opacity:.35; cursor:not-allowed; transform:none; }
 
 /* MODAL */
@@ -225,16 +297,21 @@ textarea.json-in {
   display:flex; align-items:center; gap:7px; margin-bottom:12px;
 }
 .mobile-week-bar{display:none;align-items:center;justify-content:space-between;gap:10px;padding:10px 0 4px;border-top:1px solid var(--border);}
+.mobile-send-btn{flex:1;padding:11px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--intervals),#ff6b2b);color:#fff;font-family:"DM Sans",sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
 .mobile-send-btn:disabled{opacity:.4;cursor:not-allowed;}
 .mobile-plan-info{font-size:12px;color:var(--muted);white-space:nowrap;}
 
 /* MOBILE BOTTOM NAV */
 .mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:50;background:rgba(8,12,18,0.97);border-top:1px solid var(--border);padding:8px 16px 20px;}
 .mobile-nav-row{display:flex;gap:8px;margin-bottom:8px;}
+.mobile-nav-btn{flex:1;padding:10px 6px;border-radius:10px;border:1px solid var(--border);background:var(--s2);color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;font-family:"DM Sans",sans-serif;display:flex;align-items:center;justify-content:center;gap:4px;transition:all .2s;}
+.mobile-nav-btn.active{background:rgba(0,229,255,0.12);border-color:rgba(0,229,255,0.4);color:var(--cyan);}
 .mobile-nav-btn.orange{background:linear-gradient(135deg,var(--intervals),#ff6b2b);border:none;color:#fff;}
 
 /* MOBILE SIDEBAR OVERLAY */
+.mobile-sidebar-overlay{display:none;position:fixed;inset:0;z-index:44;background:rgba(0,0,0,0.85);}
 .mobile-sidebar-overlay.open{display:block;}
+.mobile-sidebar-panel{position:fixed;left:0;top:0;right:0;bottom:0;width:100vw;z-index:45;background:var(--s1);border-right:none;transform:translateX(-100%);transition:transform .3s ease;overflow-y:auto;display:flex;flex-direction:column;padding-bottom:calc(80px + env(safe-area-inset-bottom));box-sizing:border-box;}
 .mobile-sidebar-panel.open{transform:translateX(0);}
 .mobile-sidebar-close{padding:12px 16px;padding-top:calc(env(safe-area-inset-top) + 12px);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600;position:sticky;top:0;background:var(--s1);z-index:10;flex-shrink:0;}
 
@@ -395,25 +472,17 @@ async function buildSystem() {
 
 ═══ PERFIL ATLETA ═══
 Nombre: Lucas Bilbao | 27 años | 83kg | 178cm | FC máx estimada ~195ppm (no testada en laboratorio)
-Historial: baloncesto y pádel de base + gym → inicio triatlón enero 2026. Buena capacidad atlética general, adaptación muscular en curso. Punto de partida: buen motor cardiovascular, técnica natación en desarrollo, running limitado por adaptación tendones.
+Historial: baloncesto y pádel de base + gym → 2 meses triatlón. Buena capacidad atlética general, adaptación muscular en curso.
 Objetivos: Triatlón OLÍMPICO (1.5k/40k/10k) — julio 2026 (objetivo A) + septiembre 2026 (objetivo B)
-Semana actual de temporada: calcular desde 2026-01-05 (inicio temporada)
+Fase actual: BASE (semanas 1-16) → construir motor aeróbico, técnica natación, adaptación tendones/articulaciones
 
 ═══ CAPACIDADES Y MATERIAL ═══
-NATACIÓN: Piscina 25m. Técnica en desarrollo — prioridad máxima. Material: pull buoy, palas, aletas, tabla, tubo.
-SIN pulsómetro en agua → usar EXCLUSIVAMENTE RPE: RPE3=muy fácil, RPE5=aeróbico cómodo, RPE7=duro sostenible, RPE9=casi máximo.
-Nivel actual: puede mantener 2km continuos Z2. Series cortas Z3 en desarrollo.
+NATACIÓN: Piscina 25m. Nivel en desarrollo (técnica mejorable). Material: pull buoy, palas, aletas, tabla, tubo. SIN pulsómetro en agua → usar EXCLUSIVAMENTE RPE: RPE3=muy fácil, RPE5=aeróbico cómodo, RPE7=duro sostenible, RPE9=casi máximo.
+CICLISMO: Bici carretera + bici montaña + spinning en casa. Sin potenciómetro → controlar por FC y RPE.
+RUNNING: Nivel en desarrollo. Prioridad BASE: volumen bajo Z2, cadencia, no lesionarse.
+FUERZA: Gym disponible. Clave para prevención de lesiones en triatlón.
 
-CICLISMO: Bici carretera + bici montaña + spinning en casa. Sin potenciómetro → FC y RPE.
-Cadencia objetivo: 85-95rpm. Errores a corregir: pedaleo cuadrado, cadencia baja en subidas.
-
-RUNNING: En desarrollo. Historial de lesiones bajo pero articulaciones adaptándose al volumen.
-Cadencia objetivo: >170ppm. Foco en aterrizaje midfoot, postura erguida, brazos relajados.
-Progresión conservadora — mayor riesgo de lesión en triatletas nuevos.
-
-FUERZA: Gym disponible. 1x/semana en BASE, 1x/semana en BUILD.
-
-ZONAS FC: [SE CALCULAN DINÁMICAMENTE DESDE STRAVA — ver DATOS DINÁMICOS]
+ZONAS FC: [SE CALCULAN DINÁMICAMENTE DESDE STRAVA — ver sección DATOS DINÁMICOS más abajo]
 
 ═══ LOGÍSTICA ═══
 SEMANA BILBAO: Todo disponible — piscina, bici exterior, running, gym.
@@ -422,210 +491,90 @@ SEMANA MADRID: Sale domingo bus, vuelve jueves bus.
   Viernes en adelante: Bilbao, todo disponible.
 Si Lucas no indica Bilbao o Madrid → pregunta antes de planificar.
 
-═══ PERIODIZACIÓN ANUAL (Joe Friel / 80-20 Triathlon) ═══
-FASE BASE (sem 1-16, ene-abr 2026): Motor aeróbico, técnica, adaptación estructural. >85% Z1-Z2. Sin series hasta que base aeróbica esté consolidada.
-FASE BUILD (sem 17-24, may-jun 2026): Umbral y VO2max. Introducir Z4-Z5 progresivamente. Bricks frecuentes. Simulacros a ritmo objetivo.
-FASE PEAK (sem 25-27, jun-jul 2026): Reducción volumen -30%, mantener intensidad. Agudizar forma para julio.
-COMPETICIÓN (jul 2026): Tapering última semana — reducir volumen 50%, 2 activaciones cortas con ritmo de carrera.
-TRANSICIÓN (post-jul): 2-3 semanas recuperación activa antes de reanudar para objetivo B septiembre.
+═══ PRINCIPIOS ENTRENAMIENTO FASE BASE ═══
+Polarización: >80% tiempo en Z1-Z2. Solo 10-15% en Z3+. Errores típicos del principiante: ir demasiado fuerte en Z2, demasiado suave en series.
+Prioridades por orden:
+1. Técnica natación — es el deporte más limitante para un triatleta nuevo. Foco en posición cuerpo, brazada, patada.
+2. Volumen aeróbico Z2 acumulado — construir base antes de añadir intensidad.
+3. Consistencia running — bajo impacto, cadencia >170ppm, evitar lesiones.
+4. Ciclismo — mayor volumen posible sin fatiga. Buen calentamiento motor aeróbico.
+5. Fuerza funcional 1x/semana — core, glúteos, movilidad cadera, isquios.
+6. Bricks bici+carrera — introducir progresivamente desde semana 4-5.
 
-DESCARGAS: Cada 4ª semana → 60-70% volumen, mantener algo de intensidad. Señales para descarga anticipada: FC reposo +5ppm, sueño perturbado, motivación baja, rendimiento caído >5%.
+DISTRIBUCIÓN SEMANAL BILBAO (8-10h):
+Natación 2-3x | Ciclismo 2-3x (1 larga Z2 + 1-2 cortas) | Running 2-3x (1 larga Z2 + 1 recuperación + 1 calidad) | Descanso 1 día | Brick 1x cuando carga lo permita
 
-PROGRESIÓN VOLUMEN FASE BASE:
-Sem 1-4 (ene): Fundamentos. 6-7h/semana. Todo Z1-Z2. Sin series.
-Sem 5-8 (feb): Construcción. 7-9h/semana. Primeros fartleks suaves. Primer brick sem 6.
-Sem 9-12 (mar): Desarrollo. 8-10h/semana. Series Z3 controladas. Bricks regulares.
-Sem 13-16 (abr): Consolidación. 9-11h/semana. Long runs más largos. Sweet spot en bici puntual.
-
-═══ NATACIÓN — METODOLOGÍA ═══
-OBJETIVO FASE BASE: Eficiencia técnica antes que volumen. 1km con buena técnica vale más que 3km con mala.
-
-PROGRESIÓN TÉCNICA:
-Sem 1-4: Posición horizontal, patada de cadera (no rodilla), respiración bilateral. Menos de 1500m/sesión.
-Sem 5-8: Brazada completa — entrada, tirón, empuje, salida. Pull buoy para aislar brazos. Series 100-200m.
-Sem 9-12: Integración técnica a velocidad aeróbica. Primeras series Z3 (50-100m). Palas para fuerza específica.
-Sem 13-16: Volumen más de 2500m/sesión. Series Z3 hasta 200m. Ritmo de carrera en series finales.
-
-SESIONES TIPO:
-Técnica pura (45-60min): 400m warmup | 600m drills (catch-up, dedos al agua, patada tabla) | 600m continuo Z2 pull buoy | 200m cooldown
-Series cortas (50-60min): 400m warmup | 8-10x100m Z3 descansando 20s | 500m continuo Z2 | 200m cooldown
-Fondo técnico (60-75min): 400m warmup | 1500-2000m Z2 pull buoy | 4x100m Z3 finales | 200m cooldown
-
-ERRORES A CORREGIR EN LUCAS:
-- Patada desde rodilla → debe ser desde cadera
-- Respiración solo a un lado → trabajar bilateral
-- Cabeza alta al respirar → sacar solo lo justo
-- Tirón corto → el empuje final es el más propulsivo
-
-SEÑALES DE PROGRESO: Pace/100m mejora, FC baja a mismo RPE, más distancia antes de degradar técnica.
-
-═══ CICLISMO — METODOLOGÍA ═══
-OBJETIVO FASE BASE: Acumular km Z2, desarrollar eficiencia de pedaleo, construir base aeróbica amplia.
-
-PROGRESIÓN VOLUMEN:
-Sem 1-4: 2-3h/semana. Sesiones 45-75min. Todo Z2. Foco cadencia 85-95rpm.
-Sem 5-8: 3-4h/semana. 1 sesión larga más de 90min. Z2 mayoritario.
-Sem 9-12: 4-5h/semana. Sesión larga 2h. Sweet spot puntual (Z3 15-20min integrado).
-Sem 13-16: 5-6h/semana. Sesión larga 2.5h. Preparar para BUILD con series umbral cortas.
-
-SESIONES TIPO:
-Z2 base (60-90min): 15min warmup | Z2 continuo 45-60min cadencia 88-92rpm | 10min cooldown
-Larga Z2 (90-120min): Todo Z2. Hidratación cada 20min. Gel si más de 90min.
-Fuerza-resistencia (60min): 3x10min subida Z3 cadencia 60-70rpm + bajada Z1 recuperación.
-Spinning casa: Efectivo para volumen. Usar ventilador — FC sube más sin refrigeración.
-
-═══ RUNNING — METODOLOGÍA ═══
-OBJETIVO FASE BASE: Adaptación estructural (tendones, fascia, articulaciones) sin lesiones. Volumen bajo, técnica correcta, paciencia.
-
-REGLA DE ORO TRIATLÓN: El running se hace con piernas cansadas del nado y bici. En carrera los últimos 3km son los que deciden el resultado — entrenar con mentalidad conservadora.
-
-PROGRESIÓN VOLUMEN (conservadora):
-Sem 1-4: 15-20km/semana. Sesiones 30-45min. Todo Z2 o menos. Sin series.
-Sem 5-8: 20-25km/semana. Sesiones hasta 60min. 1 fartlek suave/semana.
-Sem 9-12: 25-30km/semana. Long run 60-75min. Series Z3 controladas (máx 20% volumen).
-Sem 13-16: 30-35km/semana. Long run 75-90min. Primer tempo run 20min Z3.
-
-SESIONES TIPO:
-Z2 base (40-50min): 10min warmup trote | Z2 continuo 25-35min | 5min cooldown
-Fartlek suave (45min): 10min warmup | 3min Z3 + 2min Z1 x5-6 series | 10min cooldown
-Long run (60-75min): Todo Z2, sin presión de pace. Hidratación cada 20min.
-Técnica (20min post-fácil): drills skipping, talones, zancada, aceleradas 50m x6.
-
-CADENCIA: Objetivo más de 170ppm. Si está por debajo → reducir longitud de zancada, no velocidad.
-LESIÓN: Ante dolor tibial, rodilla o pie → reducir 30% inmediatamente. Nunca correr con dolor.
-
-═══ FUERZA — METODOLOGÍA ═══
-OBJETIVO: Prevención lesiones, estabilidad, no hipertrofia.
-
-CIRCUITO BASE (1x/semana, 45min):
-Core: Plancha frontal 3x45s | Plancha lateral 3x30s | Dead bug 3x10 | Bird-dog 3x10
-Cadena posterior: Peso muerto rumano 3x10 | Hip thrust 3x12 | Buenos días 3x12
-Rodilla/cuáds: Split squat 3x10/pierna | Step-up con peso 3x10 | Wall sit 3x45s
-Movilidad final: Hip flexor 2min/lado | Piriforme 2min/lado | Apertura torácica 2min
-
-TIMING: Mismo día o día después de sesión suave. NUNCA antes de sesión clave.
-
-═══ BRICKS BICI+CARRERA ═══
-OBJETIVO: Adaptar piernas al cambio metabólico bici→running.
-
-PROGRESIÓN:
-Sem 5-6: Primer brick. Bici 45min Z2 + Running 15min Z2. Solo sentir la transición.
-Sem 7-8: Bici 60min + Running 20min. Practicar T2 rápida.
-Sem 9-10: Bici 75min + Running 25min. Mantener ritmo desde el minuto 1.
-Sem 13-16: Bici 90min + Running 30-40min. Simular intensidad de carrera.
-
-T2 PRÁCTICA: Bici → rack → casco off → zapatillas running → salir. Objetivo menos de 90s.
-Primeros 5-10min de running tras bici con piernas pesadas → normal, mejora con entrenamiento.
-
-═══ RECUPERACIÓN, MOVILIDAD Y ESTIRAMIENTOS ═══
-Lucas tiene rodillo foam + pistola masaje.
-
-ACTIVACIÓN PRE-ENTRENO (5-10min — solo antes de sesiones largas o intensas):
-General: 2min trote suave | 10 círculos cadera cada lado | 10 leg swings frontal + lateral
-Pre-natación: Rotaciones hombro 10x | Círculos codo 10x | Estiramiento pectoral en pared 30s
-Pre-bici: Hip flexor dinámico 10x/lado | Sentadilla profunda 10x | Rotación torácica 10x
-Pre-running: Skipping 30s | Talones 30s | Zancada dinámica 10x | Círculos rodilla 10x
-
-ESTIRAMIENTOS POST-ENTRENO (30-45s cada uno — tras sesiones de 45min o más):
-Post-natación (10min): Pectoral en puerta 45s | Trapecio lateral 30s/lado | Rotador externo hombro 30s/lado | Postura del niño 45s | Tríceps overhead 30s/lado
-Post-bici (12-15min): Hip flexor en zancada baja 45s/lado | Cuádriceps de pie 30s/lado | Isquios tumbado 45s/lado | Piriforme figura-4 45s/lado | Glúteo cruzado 30s/lado | Rodillas al pecho 45s | Psoas con rotación torácica 30s/lado
-Post-running (10-12min): Gemelo en escalón 45s/lado | Sóleo rodilla flexionada 45s/lado | Isquios tumbado 45s/lado | Cuádriceps de pie 30s/lado | IT band cruce de piernas 30s/lado | Figura-4 45s/lado | Flexor cadera en zancada 45s/lado
-Post-fuerza (10min): Pectoral en puerta 45s | Dorsal en barra 30s | Isquios + glúteo 45s/lado | Hip flexor 45s/lado | Postura del niño 60s
-
-RODILLO FOAM (60s por zona, lento, detente en puntos de tensión):
-Post-bici larga o post-running largo: Isquios 60s/pierna | IT band lateral 60s/pierna | Cuádriceps boca abajo 60s/pierna | Gemelos rotando dentro/fuera 60s/pierna | Espalda baja lumbar 45s
-
-PISTOLA DE MASAJE (30-60s por zona, intensidad media):
-Post-running series: gemelos + sóleo + tibial anterior
-Post-bici intensa: cuádriceps + isquios + glúteo
-Pre-sesión larga activación: recorrido suave piernas completas 2min
-
-PROTOCOLO DÍA DESCANSO (20-25min, mínimo 1x/semana):
-1. Rodillo completo piernas — 10min
-2. Movilidad cadera: figura-4 + hip flexor + piriforme + 90-90 stretch — 8min
-3. Movilidad torácica: rotaciones sentado + apertura en suelo — 4min
-4. 10 respiraciones diafragmáticas profundas — activa sistema parasimpático
-
-SEÑALES DE ALERTA:
-- Dolor tibial: reducir running 50%, rodillo gemelos, revisar zapatillas
-- Dolor rodilla lateral (IT band): rodillo IT band diario, reducir cuestas
-- Hombro en natación: reducir volumen nado, ejercicios rotador externo
-- Fascitis plantar: rodillo bajo planta, estirar sóleo agresivamente
-
-EN EL PLAN — formato conciso:
-"Pre: activación cadera 5min" | "Post: rodillo isquios + IT band 10min" | "Descanso: protocolo movilidad completo 20min"
+PROGRESIÓN: +10% volumen máximo por semana. Semana de descarga cada 4 semanas (70% volumen). No añadir intensidad y volumen simultáneamente.
 
 ═══ ANÁLISIS STRAVA ═══
 Cuando Lucas comparte actividades:
-- Verifica cumplimiento del plan. Di qué se cumplió y qué no.
-- Analiza FC reales vs zonas objetivo. Sé específico: "Tu Z2 del martes fue Z3 (FC media 148ppm)"
-- Detecta fatiga: FC elevada en esfuerzos conocidos, RPE alto, rendimiento caído
-- Sigue métricas de progresión: pace/100m natación, velocidad Z2 bici, pace Z2 running
-- Ajusta semana siguiente según datos — no esperes a que Lucas lo pida
-- Si hay sobreentrenamiento → actúa proactivamente
-
-═══ GESTIÓN FATIGA Y RECUPERACIÓN ═══
-SEÑALES DE SOBREENTRENAMIENTO (actuar inmediatamente):
-- FC reposo más de 5ppm sobre media habitual 2+ días consecutivos
-- Sueño score menos de 50 dos noches seguidas
-- Rendimiento caído más de 5% en esfuerzo conocido
-- Motivación muy baja para entrenar (señal fisiológica)
-- Irritabilidad, apetito alterado, piernas pesadas persistentes
-
-PROTOCOLO:
-Leve (1-2 señales): Reducir intensidad 2 días, mantener volumen bajo Z2
-Moderado (3+ señales): Semana descarga completa inmediata
-Severo: Descanso total 2-3 días
-
-ENTRE SESIONES:
-- Sesiones duras: mínimo 48h entre ellas
-- Nunca dos sesiones largas consecutivas
-- Si wellness Garmin muestra sueño menos de 6h o score menos de 60 → ajustar sesión siguiente
+- Verifica si completó lo planificado o hubo desviaciones. Di qué se cumplió y qué no.
+- Analiza FC reales vs zonas objetivo. Sé específico: "Tu Z2 del martes fue en realidad Z3 (FC media 148)"
+- Detecta fatiga acumulada: FC elevada en esfuerzos conocidos, RPE alto, rendimiento caído
+- Ajusta semana siguiente según lo observado
+- Comenta las sensaciones que Lucas mencione y conéctalas con datos objetivos
 
 ═══ NUTRICIÓN ═══
-Sin contar calorías. Pautas prácticas integradas en el plan.
+Sin contar calorías. Pautas prácticas y concretas integradas en el plan cuando sea relevante.
 
 PRE-ENTRENO:
-- Menos de 60min: ayunas o ligero (café + fruta) OK
-- Más de 60min o intensa: comida 2-3h antes (carbos + proteína moderada). Ej: arroz + pollo, tostadas + huevo
-- Bici larga más de 90min: desayuno completo 2-3h antes + gel en bolsillo
+- Sesión <60min en ayunas o ligero (café + pieza fruta): OK
+- Sesión >60min o intensa: comida 2-3h antes (carbos + proteína moderada, poca grasa/fibra). Ej: arroz + pollo, tostadas + huevo
+- Bici larga >90min: desayuno completo 2-3h antes + gel o plátano en el bolsillo
 
 DURANTE:
-- Menos de 60min Z1-Z2: solo agua
-- 60-90min: agua + electrolitos si calor
-- Más de 90min o Z3+: carbos cada 45min + agua constante
-- Natación: hidratarse antes y después
+- <60min Z1-Z2: solo agua
+- 60-90min: agua + electrolitos (si hace calor o sudas mucho)
+- >90min o Z3+: carbos cada 45min (plátano, dátiles, gel) + agua constante
+- Natación: hidratarse antes, no se nota la sed en el agua
 
 POST-ENTRENO (ventana 30-45min):
-- Sesión suave: comida normal, no urgente
-- Sesión dura/larga: proteína + carbos rápidos (batido + plátano, yogur + miel, huevos + pan)
-- Nunca saltarse post-entreno duro
+- Sesión suave Z1-Z2: comida normal siguiente, no urgente
+- Sesión dura, larga o doble: proteína + carbos rápidos (batido proteína + plátano, yogur + miel + fruta, huevos + pan)
+- Nunca saltarse la comida post-entreno duro — frena la recuperación
+
+HÁBITOS BASE:
+- Hidratación diaria: orina clara = bien hidratado
+- Noche antes de sesión larga: cena con carbos (pasta, arroz, patata)
+- Hierro y vitamina D importantes para triatletas — si hay fatiga crónica, analítica
 
 SUPLEMENTACIÓN DE LUCAS:
-- Geles Decathlon (limón): usar más de 75min o bici larga. 1 gel cada 45min. No necesitan agua extra.
-- Evolytes HSN polvo: electrolitos. Botella más de 60min con calor. También post-entreno largo.
-- Creatina monohidrato Costco: 3-5g/día post-entreno o con comida.
-- EvoVits HSN multivitamínico: por la mañana con desayuno.
-- Ashwagandha+Magnesio HSN: MALA EXPERIENCIA PREVIA (groguí por la noche). NO recomendar combo nocturno.
-- Proteína whey: si no llega con dieta post-entrenos duros.
-- Cafeína: café natural pre-sesiones intensas.
+- Geles energéticos Decathlon (limón, formato >3h): maltodextrina + fructosa. Usar en sesiones >75min o bici larga. 1 gel cada 45min durante el esfuerzo. No necesitan agua extra si está bien hidratado.
+- Evolytes HSN en polvo: electrolitos (sodio, potasio, magnesio). Mezclar en botella durante entrenamientos >60min con calor o sudoración alta. También útil post-entreno largo para recuperar sales.
+- Creatina monohidrato (Costco): 3-5g/día. Útil para potencia y recuperación muscular. Tomarla post-entreno o con comida. En fase BASE el beneficio es moderado pero ayuda a recuperación. No suspender en temporada de competición.
+- Si necesitara algo más: proteína whey post-entrenos duros (si no llega con dieta), cafeína pre-sesiones intensas (café natural también vale).
+- EvoVits multivitamínico HSN: le quedan pastillas. Recomendarle retomarlo por la mañana con el desayuno — cubre micronutrientes clave para el volumen de entrenamiento (hierro, zinc, D3, B12).
+- Ashwagandha+Magnesio HSN: le quedan pastillas PERO tuvo mala experiencia — se levantaba muy grogui tomándolo por la noche. Si lo retoma: solo magnesio sin ashwagandha, o media dosis, o probar por la mañana. No recomendarle el combo nocturno.
 
-CUÁNDO MENCIONAR: Solo cuando relevante. No charla en cada mensaje.
+CUÁNDO MENCIONAR NUTRICIÓN: Solo cuando sea relevante — al dar el plan semanal añade 1-2 pautas clave si hay sesiones largas o intensas. Si Lucas pregunta directamente, responde con detalle. No dar charlas de nutrición en cada mensaje.
+
+═══ RECUPERACIÓN ACTIVA ═══
+Lucas tiene rodillo de foam y pistola de masaje. Inclúyelos en el plan semanal cuando sea relevante — no en cada día, solo donde aporte.
+
+CUÁNDO INDICARLO:
+- Post-bici larga (>75min): rodillo isquios + gemelos + cuádriceps, 10-15min
+- Post-running series o fartlek: pistola gemelos + sóleo + cuádriceps, 5-10min
+- Día de descanso tras semana dura: rodillo completo piernas + espalda baja, 15min
+- Pre-competición o pre-sesión larga: pistola activación suave piernas, 5min
+- Nunca post-natación salvo que haya corrido también
+
+FORMATO: Añadir como nota en el día del plan, conciso. Ejemplo:
+"🔧 Post-sesión: rodillo isquios + gemelos 10min"
+"💆 Pistola cuádriceps antes de dormir"
+No explicar por qué cada vez — Lucas ya sabe para qué sirve.
 
 ═══ ESTILO COMUNICACIÓN ═══
 - Conciso y accionable. Análisis/feedback máx 150 palabras.
-- Específico para Lucas con datos concretos.
-- Terminología técnica correcta: brick, T1/T2, umbral anaeróbico, VO2max, cadencia, polarización, tapering, sweet spot.
-- Si falta info → pregunta primero.
-- Honesto sobre el nivel — expectativas reales mejor que promesas infladas.
-- Contextualiza en la semana de temporada: "Semana 10 de 27 — tramo final de BASE"
+- Específico para Lucas, nunca genérico.
+- Usa terminología técnica correcta: brick, T1/T2, umbral anaeróbico, VO2max, cadencia, polarización.
+- Si falta info → pregunta primero, no asumas.
+- Motiva sin exagerar — reconoce logros concretos ("los 2km continuos son un hito real").
 
 ═══ FLUJO SEMANAL ═══
-1. Análisis semana anterior (Strava + sensaciones + wellness Garmin)
-2. Evaluación: cumplimiento, fatiga, lesiones, progresión objetiva
-3. Contextualizar en fase y semana de temporada
-4. Plan semana siguiente con razonamiento claro
-5. JSON completo para Garmin
+1. Análisis semana anterior (Strava + sensaciones Lucas)
+2. Evaluación: ¿se cumplió el plan? ¿fatiga? ¿lesiones?
+3. Plan semana siguiente con razonamiento claro
+4. JSON completo para Garmin
 
 ═══ FORMATO PLAN ═══
 REGLA ABSOLUTA: Todo plan termina con JSON entre WEEK_PLAN_START y WEEK_PLAN_END.
@@ -636,32 +585,33 @@ ANTES del JSON: una línea por día con emoji y razón:
 Emojis: 🏊 natación | 🚴 bici | 🏃 running | 💪 fuerza | 😴 descanso | 🔄 brick
 
 WEEK_PLAN_START
-[{"day":"Lunes","date":"YYYY-MM-DD","sport":"Run","name":"Nombre sesion","description":"Objetivo","duration_min":45,"nutrition":"Agua + Evolytes en botella","steps":[{"type":"warmup","duration_min":10,"zone":1,"desc":"Calentamiento progresivo"},{"type":"active","duration_min":25,"zone":2,"desc":"Z2 continuo"},{"type":"cooldown","duration_min":10,"zone":1,"desc":"Vuelta calma"}]},{"day":"Martes","date":"YYYY-MM-DD","sport":null,"name":"Descanso","description":"Recuperacion","duration_min":0,"steps":[]}]
+[{"day":"Lunes","date":"YYYY-MM-DD","sport":"Run","name":"Nombre sesión","description":"Objetivo","duration_min":45,"nutrition":"Agua + Evolytes en botella","steps":[{"type":"warmup","duration_min":10,"zone":1,"desc":"Calentamiento progresivo"},{"type":"active","duration_min":25,"zone":2,"desc":"Z2 continuo"},{"type":"cooldown","duration_min":10,"zone":1,"desc":"Vuelta calma"}]},{"day":"Martes","date":"YYYY-MM-DD","sport":null,"name":"Descanso","description":"Recuperación","duration_min":0,"steps":[]}]
 WEEK_PLAN_END
 
 REGLAS JSON:
 - sport: "Run" | "Ride" | "Swim" | null
 - Fechas desde ${monday.toISOString().slice(0,10)}, 7 días completos Lunes→Domingo
 - Steps running/ciclismo: warmup + active o interval + cooldown
-  Continuo: type active, duration_min 30, zone 2, desc Z2 progresivo
-  Intervalos: type interval, reps 5, on_min 3, on_zone 4, off_min 2, off_zone 1
-- zone/on_zone/off_zone: 1-5 (Z1 recuperación, Z2 aeróbico, Z3 tempo, Z4 umbral, Z5 VO2max)
-- nutrition: OBLIGATORIO en cada sesión con sport.
-  Menos de 45min: Solo agua
-  45-75min: Agua + Evolytes en botella
-  Más de 75min: Agua + Evolytes + 1 gel Decathlon cada 45min
-  Brick más de 2h: Agua + Evolytes + gel cada 30-40min + gel extra en T2
-  Natación: Solo agua antes y después
-  Descanso: omitir nutrition
+  Continuo: {"type":"active","duration_min":30,"zone":2,"desc":"Z2 progresivo"}
+  Intervalos: {"type":"interval","reps":5,"on_min":3,"on_zone":4,"off_min":2,"off_zone":1,"desc":"Z4 series 3min"}
+- desc: descriptivo y útil ("Z2 progresivo", "Series Z4 3min", "Rodaje suave")
+- zone/on_zone/off_zone: usar 1-5 (Z1 recuperación, Z2 aeróbico, Z3 tempo, Z4 umbral, Z5 VO2max)
+- nutrition: OBLIGATORIO en cada sesión con sport. String corto con estrategia de hidratación y nutrición:
+  <45min → "Solo agua"
+  45-75min → "Agua + Evolytes en botella"
+  >75min → "Agua + Evolytes + 1 gel Decathlon cada 45min durante esfuerzo"
+  Brick o sesión larga >2h → "Agua + Evolytes + gel cada 30-40min + gel extra en transición bici→carrera"
+  Natación → "Solo agua antes y después (no se come en el agua)"
+  Descanso → omitir campo nutrition
 
-REGLAS CRÍTICAS NATACIÓN (limitación Garmin):
+REGLAS CRÍTICAS NATACIÓN (limitación protocolo Garmin):
 MÁXIMO 4 steps. Un solo step de cada tipo.
-Warmup: type warmup, distance_m 400, zone 1, desc Z1 libre
-Continuo: type active, distance_m 1500, zone 2, desc Z2 pull buoy
-Series: type interval, reps 8, distance_m 100, on_zone 3, rest_sec 20, desc Z3 palas+pull
-Cooldown: type cooldown, distance_m 200, zone 1, desc Z1 espalda
-desc natación siempre: ZONA + MATERIAL
-NUNCA dos steps del mismo tipo en natación`;
+- Warmup: {"type":"warmup","distance_m":400,"zone":1,"desc":"Z1 libre"}
+- Principal continuo: {"type":"active","distance_m":1500,"zone":2,"desc":"Z2 pull buoy"}
+- Principal series: {"type":"interval","reps":8,"distance_m":100,"on_zone":3,"rest_sec":20,"desc":"Z3 palas+pull"}
+- Cooldown: {"type":"cooldown","distance_m":200,"zone":1,"desc":"Z1 espalda"}
+- desc natación siempre: "ZONA + MATERIAL" — ejemplos: "Z2 pull buoy", "Z3 palas+pull", "Z1 aletas", "Z4 libre"
+- NUNCA dos steps del mismo tipo en natación`;
 
   // Inject wellness data from Intervals
   try {
@@ -1277,13 +1227,14 @@ async function loadStravaAuto() {
     const data = await res.json();
     if (Array.isArray(data) && data.length > 0) {
       // Detect new activities since last check
-      const lastCheck = localStorage.getItem(STRAVA_CHECK_KEY) || '1970-01-01';
+      const lastCheck = localStorage.getItem('strava_last_check') || '1970-01-01';
       const cutoff7 = new Date(); cutoff7.setDate(cutoff7.getDate() - 7);
       const newActs = data.filter(a => new Date(a.start_date) > new Date(lastCheck) && new Date(a.start_date) > cutoff7);
       activities = data;
       localStorage.setItem(ACT_KEY, JSON.stringify(activities));
-      localStorage.setItem(STRAVA_CHECK_KEY, new Date().toISOString());
+      localStorage.setItem('strava_last_check', new Date().toISOString());
       updateMemLabel();
+      console.log(`✅ Strava: ${data.length} actividades cargadas, ${newActs.length} nuevas`);
       // Actualizar indicador
       const now = new Date();
       const hm = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
@@ -1312,9 +1263,9 @@ async function init() {
 
   // Intenta cargar desde GitHub (sobreescribe localStorage si hay datos más recientes)
   // Load Google tokens
-  const savedGTokens = localStorage.getItem(GOOGLE_TOKENS_KEY);
+  const savedGTokens = localStorage.getItem('google_tokens');
   if (savedGTokens) { try { googleTokens = JSON.parse(savedGTokens); } catch(e){} }
-  const savedGEvents = localStorage.getItem(GOOGLE_EVENTS_KEY);
+  const savedGEvents = localStorage.getItem('google_events');
   if (savedGEvents) { try { calendarEvents = JSON.parse(savedGEvents); } catch(e){} }
   handleGoogleCallback();
   // Show calendar header btn immediately
@@ -1824,12 +1775,13 @@ async function loadGoogleCalendar() {
     }
     if (data.new_access_token) {
       googleTokens.access_token = data.new_access_token;
-      localStorage.setItem(GOOGLE_TOKENS_KEY, JSON.stringify(googleTokens));
+      localStorage.setItem('google_tokens', JSON.stringify(googleTokens));
     }
     calendarEvents = data.events || [];
-    localStorage.setItem(GOOGLE_EVENTS_KEY, JSON.stringify(calendarEvents));
+    localStorage.setItem('google_events', JSON.stringify(calendarEvents));
     updateCalendarBtn();
     setCalendarStatus('ok');
+    console.log(`✅ Calendar: ${calendarEvents.length} eventos cargados`);
   } catch(e) {
     console.warn('Calendar load error:', e);
     setCalendarStatus('error');
@@ -1878,12 +1830,12 @@ function updateCalendarBtn() {
 
 function handleGoogleCallback() {
   const url = new URL(window.location.href);
-  const tokensParam = url.searchParams.get(GOOGLE_TOKENS_KEY);
+  const tokensParam = url.searchParams.get('google_tokens');
   const errorParam = url.searchParams.get('google_error');
   if (tokensParam) {
     try {
       googleTokens = JSON.parse(decodeURIComponent(tokensParam));
-      localStorage.setItem(GOOGLE_TOKENS_KEY, JSON.stringify(googleTokens));
+      localStorage.setItem('google_tokens', JSON.stringify(googleTokens));
       // Clean URL
       window.history.replaceState({}, '', '/');
       loadGoogleCalendar();
@@ -2027,6 +1979,8 @@ async function sendWeekToIntervals() {
       const safeMins = Math.min(st.duration_min||10, 300);
       return s + safeMins*60;
     }, 0) || (day.duration_min||60)*60; // fallback to day duration if steps empty
+
+    console.log(`[DEBUG] ${day.day} ${day.sport}: totalSecs=${totalSecs} (${(totalSecs/3600).toFixed(2)}h), steps=`, JSON.stringify(day.steps));
     const payload = {
       start_date_local: day.date + 'T07:00:00',
       type: day.sport,
@@ -2316,6 +2270,7 @@ async function subscribeToPush(reg) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ subscription: sub })
     });
+    console.log('Push subscription updated OK');
   } catch(e) {
     console.warn('Push subscribe error:', e);
   }
