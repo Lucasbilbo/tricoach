@@ -620,7 +620,7 @@ MÁXIMO 4 steps. Un solo step de cada tipo.
       const fmt = secs => secs ? `${Math.floor(secs/3600)}h${Math.round((secs%3600)/60)}min` : '—';
       const wLines = wellness.map(d => {
         const parts = [];
-        if (d.sleepSecs) parts.push(`Sueño: ${fmt(d.sleepSecs)}${d.sleepScore ? ` (score ${d.sleepScore})` : ''}${d.sleepQuality ? ` calidad ${d.sleepQuality}/5` : ''}`);
+        if (d.sleepSecs) parts.push(`Sueño: ${fmt(d.sleepSecs)}${d.sleepScore ? ` (score ${d.sleepScore})` : ''}${d.sleepQuality ? ` calidad ${d.sleepQuality}` : ''}`);
         if (d.hrv) parts.push(`HRV: ${d.hrv}ms`);
         if (d.restingHR) parts.push(`FC reposo: ${d.restingHR}bpm`);
         if (d.stress) parts.push(`Estrés: ${d.stress}/100`);
@@ -1491,18 +1491,18 @@ async function fetchWellness() {
     const data = await res.json();
     if (!Array.isArray(data) || !data.length) return null;
     // Return last 3 days with data, newest first
-    return data.slice(-3).reverse().map(d => ({
+    const qualityLabel = q => q === 1 ? 'excelente' : q === 2 ? 'buena' : q === 3 ? 'regular' : q === 4 ? 'mala' : '';
+    return data.slice(-4).reverse().map(d => ({
       date: d.id,
       sleepSecs: d.sleepSecs,
       sleepScore: d.sleepScore,
-      sleepQuality: d.sleepQuality,
+      sleepQuality: d.sleepQuality ? qualityLabel(d.sleepQuality) : null,
       hrv: d.hrv,
-      hrvSDNN: d.hrvSDNN,
       restingHR: d.restingHR,
       stress: d.stress,
       fatigue: d.fatigue,
       bodyBattery: d.bodyBattery
-    })).filter(d => d.sleepSecs || d.hrv || d.restingHR);
+    })).filter(d => d.sleepSecs || d.restingHR);
   } catch(e) {
     console.warn('Wellness fetch error:', e);
     return null;
