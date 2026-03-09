@@ -2212,23 +2212,21 @@ async function requestNotifPermission() {
 
 async function subscribeToPush(reg) {
   try {
-    // Check if already subscribed
-    let sub = await reg.pushManager.getSubscription();
-    if (!sub) {
-      // Convert VAPID key
-      const keyBytes = Uint8Array.from(atob(VAPID_PUBLIC_KEY.replace(/-/g,'+').replace(/_/g,'/')), c => c.charCodeAt(0));
-      sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: keyBytes
-      });
-    }
-    // Send subscription to server
+    // Always unsubscribe first to force fresh subscription with current VAPID keys
+    const existing = await reg.pushManager.getSubscription();
+    if (existing) await existing.unsubscribe();
+
+    const keyBytes = Uint8Array.from(atob(VAPID_PUBLIC_KEY.replace(/-/g,'+').replace(/_/g,'/')), c => c.charCodeAt(0));
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: keyBytes
+    });
     await fetch('/.netlify/functions/push-subscribe', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ subscription: sub })
     });
-    console.log('Push subscription OK');
+    console.log('Push subscription updated OK');
   } catch(e) {
     console.warn('Push subscribe error:', e);
   }
