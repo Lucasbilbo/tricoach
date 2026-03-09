@@ -628,7 +628,7 @@ MÁXIMO 4 steps. Un solo step de cada tipo.
         if (d.bodyBattery) parts.push(`Body Battery: ${d.bodyBattery}%`);
         return `  ${d.date}: ${parts.join(' | ')}`;
       }).join('\n');
-      systemPrompt += `\n\nDATO BIENESTAR GARMIN (últimos días):\n${wLines}\nUSA ESTOS DATOS para ajustar la intensidad del plan. HRV bajo o sueño <6h → reducir intensidad. Body battery <30% → día suave o descanso.`;
+      s += `\n\nDATO BIENESTAR GARMIN (últimos días):\n${wLines}\nUSA ESTOS DATOS para ajustar la intensidad del plan. Si sueño score <60 o <6h → reducir intensidad ese día. Menciona explícitamente el estado del sueño al planificar.`;
     }
   } catch(e) {}
 
