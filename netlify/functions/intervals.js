@@ -45,6 +45,15 @@ exports.handler = async (event) => {
     return { statusCode: res.status, headers: CORS, body: res.body };
   }
 
+  // GET — wellness de los últimos N días
+  if (event.httpMethod === 'GET' && action === 'wellness') {
+    const days = parseInt(params.days || '7');
+    const newest = new Date().toISOString().slice(0, 10);
+    const oldest = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
+    const res = await intervalsRequest('GET', `/api/v1/athlete/${ATHLETE_ID}/wellness?oldest=${oldest}&newest=${newest}`);
+    return { statusCode: res.status, headers: CORS, body: res.body };
+  }
+
   // DELETE — borrar evento por ID
   if (event.httpMethod === 'DELETE' && action === 'delete') {
     const { id } = params;

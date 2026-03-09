@@ -457,7 +457,7 @@ const NOTES_KEY     = "tricoach_v5_daynotes";
 let history = [], activities = [], weekPlan = [], dayNotes = {}, isLoading = false;
 
 // ─── SYSTEM PROMPT ───
-function buildSystem() {
+async function buildSystem() {
   const today = new Date();
   const todaySpain = new Date(today.toLocaleString('en-US', {timeZone: 'Europe/Madrid'}));
   const monday = new Date(todaySpain);
@@ -612,6 +612,25 @@ MÁXIMO 4 steps. Un solo step de cada tipo.
 - Cooldown: {"type":"cooldown","distance_m":200,"zone":1,"desc":"Z1 espalda"}
 - desc natación siempre: "ZONA + MATERIAL" — ejemplos: "Z2 pull buoy", "Z3 palas+pull", "Z1 aletas", "Z4 libre"
 - NUNCA dos steps del mismo tipo en natación`;
+
+  // Inject wellness data from Intervals
+  try {
+    const wellness = await fetchWellness();
+    if (wellness && wellness.length) {
+      const fmt = secs => secs ? `${Math.floor(secs/3600)}h${Math.round((secs%3600)/60)}min` : '—';
+      const wLines = wellness.map(d => {
+        const parts = [];
+        if (d.sleepSecs) parts.push(`Sueño: ${fmt(d.sleepSecs)}${d.sleepScore ? ` (score ${d.sleepScore})` : ''}${d.sleepQuality ? ` calidad ${d.sleepQuality}/5` : ''}`);
+        if (d.hrv) parts.push(`HRV: ${d.hrv}ms`);
+        if (d.restingHR) parts.push(`FC reposo: ${d.restingHR}bpm`);
+        if (d.stress) parts.push(`Estrés: ${d.stress}/100`);
+        if (d.fatigue) parts.push(`Fatiga: ${d.fatigue}/10`);
+        if (d.bodyBattery) parts.push(`Body Battery: ${d.bodyBattery}%`);
+        return `  ${d.date}: ${parts.join(' | ')}`;
+      }).join('\n');
+      systemPrompt += `\n\nDATO BIENESTAR GARMIN (últimos días):\n${wLines}\nUSA ESTOS DATOS para ajustar la intensidad del plan. HRV bajo o sueño <6h → reducir intensidad. Body battery <30% → día suave o descanso.`;
+    }
+  } catch(e) {}
 
   // Inject Google Calendar events
   if (calendarEvents && calendarEvents.length > 0) {
@@ -1465,6 +1484,31 @@ function toggleDetail(idx) {
   el.classList.toggle('open');
 }
 
+async function fetchWellness() {
+  try {
+    const res = await fetch('/.netlify/functions/intervals?action=wellness&days=5');
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!Array.isArray(data) || !data.length) return null;
+    // Return last 3 days with data, newest first
+    return data.slice(-3).reverse().map(d => ({
+      date: d.id,
+      sleepSecs: d.sleepSecs,
+      sleepScore: d.sleepScore,
+      sleepQuality: d.sleepQuality,
+      hrv: d.hrv,
+      hrvSDNN: d.hrvSDNN,
+      restingHR: d.restingHR,
+      stress: d.stress,
+      fatigue: d.fatigue,
+      bodyBattery: d.bodyBattery
+    })).filter(d => d.sleepSecs || d.hrv || d.restingHR);
+  } catch(e) {
+    console.warn('Wellness fetch error:', e);
+    return null;
+  }
+}
+
 async function runOlympicSim() {
   const el = document.getElementById('simResult');
   if (!el) return;
@@ -2077,7 +2121,7 @@ async function callAPI(userMsg) {
   const msgs = [...history.filter(m=>m.role), {role:'user',content:userMsg}];
   const r = await fetch(CLAUDE_URL, {
     method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:3000,system:buildSystem(),messages:msgs}),
+    body: JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:3000,system:await buildSystem(),messages:msgs}),
   });
   const d = await r.json();
   return d.content?.map(b=>b.text||'').join('') || 'Error al procesar.';
