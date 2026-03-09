@@ -6,6 +6,5 @@
   [headers.values]
     Access-Control-Allow-Origin = "*"
 
-# Push notification cron - runs every hour, function checks if it's 8 or 20h Spain
 [functions."push-send"]
-  schedule = "0 6,18 * * *"
+  schedule = "0 7,19 * * *"
