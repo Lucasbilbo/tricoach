@@ -1,4 +1,4 @@
-const CACHE = 'tricoach-v1';
+const CACHE = 'tricoach-v3';
 const ASSETS = ['/', '/index.html'];
 
 self.addEventListener('install', e => {
@@ -14,7 +14,6 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  // Solo cachear GET, nunca las llamadas a la API
   if (e.request.method !== 'GET') return;
   if (e.request.url.includes('/.netlify/functions/')) return;
   if (e.request.url.includes('api.github.com')) return;
@@ -27,5 +26,46 @@ self.addEventListener('fetch', e => {
         return res;
       })
       .catch(() => caches.match(e.request))
+  );
+});
+
+// ─── PUSH NOTIFICATIONS ───
+self.addEventListener('push', e => {
+  let title = 'TriCoach AI';
+  let body = 'Tienes un entreno pendiente';
+  let tag = 'tricoach';
+
+  try {
+    if (e.data) {
+      const text = e.data.text();
+      const data = JSON.parse(text);
+      title = data.title || title;
+      body = data.body || body;
+      tag = data.tag || tag;
+    }
+  } catch(err) {
+    // If parse fails use defaults
+    if (e.data) body = e.data.text() || body;
+  }
+
+  e.waitUntil(
+    self.registration.showNotification(title, {
+      body,
+      icon: '/icon-192.png',
+      badge: '/icon-192.png',
+      tag,
+      renotify: true,
+      data: { url: '/' }
+    })
+  );
+});
+
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  e.waitUntil(
+    clients.matchAll({ type: 'window' }).then(wins => {
+      if (wins.length > 0) return wins[0].focus();
+      return clients.openWindow('/');
+    })
   );
 });
