@@ -446,7 +446,7 @@ const CLAUDE_URL  = "/.netlify/functions/claude";
 const HISTORY_URL = "/.netlify/functions/github-history";
 
 // Secret compartido — Netlify inject via _redirects or env. Vacío en dev local.
-const TRICOACH_SECRET = 'tricoach-x7k9m2p4q8r3';
+const TRICOACH_SECRET = typeof __TRICOACH_SECRET__ !== 'undefined' ? __TRICOACH_SECRET__ : '';
 const authHeaders = (extra = {}) => ({
   'Content-Type': 'application/json',
   ...(TRICOACH_SECRET ? { 'x-tricoach-secret': TRICOACH_SECRET } : {}),
@@ -472,13 +472,53 @@ async function buildSystem() {
   const dayNames = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
   const todayName = dayNames[todaySpain.getDay()];
 
+  // ── Fase de entrenamiento dinámica ──────────────────────────────────────────
+  const SEASON_START  = new Date('2026-01-05'); // inicio temporada
+  const TARGET_A      = new Date('2026-07-05'); // objetivo A julio
+  const TARGET_B      = new Date('2026-09-06'); // objetivo B septiembre
+  const BIRTH_YEAR    = 1998;
+
+  const weekNum = Math.max(1, Math.ceil((todaySpain - SEASON_START) / (7 * 86400000)));
+  const daysToA = Math.ceil((TARGET_A - todaySpain) / 86400000);
+  const age     = todaySpain.getFullYear() - BIRTH_YEAR;
+
+  // Periodización: BASE 1-16 | BUILD 17-24 | PEAK 25-28 | TAPER 29-30 | POST-RACE
+  let phase, phaseDesc, phaseGuidance;
+  if (daysToA < 0) {
+    phase = 'POST-RACE';
+    phaseDesc = 'objetivo A completado';
+    phaseGuidance = 'Fase de recuperación y preparación objetivo B septiembre. Reducir volumen 2 semanas, luego retomar BUILD ligero.';
+  } else if (weekNum <= 16) {
+    const isDeload = weekNum % 4 === 0;
+    phase = 'BASE';
+    phaseDesc = `semana ${weekNum}/16${isDeload ? ' — SEMANA DESCARGA' : ''}`;
+    phaseGuidance = isDeload
+      ? 'SEMANA DE DESCARGA: reducir volumen al 70%. Sin series, sin umbral. Solo Z1-Z2 y recuperación activa.'
+      : 'Construir motor aeróbico, técnica natación, adaptación tendones/articulaciones. >80% tiempo Z1-Z2.';
+  } else if (weekNum <= 24) {
+    const isDeload = (weekNum - 16) % 4 === 0;
+    phase = 'BUILD';
+    phaseDesc = `semana ${weekNum} (BUILD ${weekNum - 16}/8)${isDeload ? ' — SEMANA DESCARGA' : ''}`;
+    phaseGuidance = isDeload
+      ? 'SEMANA DE DESCARGA: reducir volumen al 70%. Mantener algo de calidad pero bajar carga total.'
+      : 'Introducir intensidad progresiva: series Z4, tempo Z3, bricks regulares. Volumen similar a BASE pero con más calidad. 70/30 Z1-Z2 vs Z3+.';
+  } else if (weekNum <= 28) {
+    phase = 'PEAK';
+    phaseDesc = `semana ${weekNum} (PEAK ${weekNum - 24}/4)`;
+    phaseGuidance = `Máxima forma específica. Entrenamientos de simulación de carrera. ${daysToA} días para el objetivo A. Reducir volumen 10%, mantener intensidad.`;
+  } else {
+    phase = 'TAPER';
+    phaseDesc = `semana ${weekNum} (TAPER — ${daysToA} días para carrera)`;
+    phaseGuidance = `TAPER ACTIVO: reducir volumen 40-50%, mantener 1-2 estímulos de calidad cortos. Descanso, sueño, hidratación. No probar nada nuevo.`;
+  }
+
   let s = `Eres TriCoach, el entrenador personal de Lucas Bilbao para su preparación al triatlón olímpico. Hablas español de España. Tono directo, técnico y motivador — como un entrenador profesional de alto rendimiento, no un chatbot genérico. Hoy es ${todayName} ${todayStr} (España, Europe/Madrid).
 
 ═══ PERFIL ATLETA ═══
-Nombre: Lucas Bilbao | 27 años | 83kg | 178cm | FC máx estimada ~195ppm (no testada en laboratorio)
-Historial: baloncesto y pádel de base + gym → 2 meses triatlón. Buena capacidad atlética general, adaptación muscular en curso.
-Objetivos: Triatlón OLÍMPICO (1.5k/40k/10k) — julio 2026 (objetivo A) + septiembre 2026 (objetivo B)
-Fase actual: BASE (semanas 1-16) → construir motor aeróbico, técnica natación, adaptación tendones/articulaciones
+Nombre: Lucas Bilbao | ${age} años | 83kg | 178cm | FC máx estimada ~195ppm (no testada en laboratorio)
+Historial: baloncesto y pádel de base + gym → primeros meses de triatlón. Buena capacidad atlética general, adaptación muscular en curso.
+Objetivos: Triatlón OLÍMPICO (1.5k/40k/10k) — julio 2026 (objetivo A, ${daysToA} días) + septiembre 2026 (objetivo B)
+Fase actual: ${phase} (${phaseDesc}) → ${phaseGuidance}
 
 ═══ CAPACIDADES Y MATERIAL ═══
 NATACIÓN: Piscina 25m. Nivel en desarrollo (técnica mejorable). Material: pull buoy, palas, aletas, tabla, tubo. SIN pulsómetro en agua → usar EXCLUSIVAMENTE RPE: RPE3=muy fácil, RPE5=aeróbico cómodo, RPE7=duro sostenible, RPE9=casi máximo.
@@ -495,18 +535,40 @@ SEMANA MADRID: Sale domingo bus, vuelve jueves bus.
   Viernes en adelante: Bilbao, todo disponible.
 Si Lucas no indica Bilbao o Madrid → pregunta antes de planificar.
 
-═══ PRINCIPIOS ENTRENAMIENTO FASE BASE ═══
-Polarización: >80% tiempo en Z1-Z2. Solo 10-15% en Z3+. Errores típicos del principiante: ir demasiado fuerte en Z2, demasiado suave en series.
-Prioridades por orden:
-1. Técnica natación — es el deporte más limitante para un triatleta nuevo. Foco en posición cuerpo, brazada, patada.
+═══ PRINCIPIOS ENTRENAMIENTO — FASE ${phase} ═══
+${phase === 'BASE' ? `Polarización: >80% tiempo en Z1-Z2. Solo 10-15% en Z3+. Errores típicos del principiante: ir demasiado fuerte en Z2, demasiado suave en series.
+Prioridades:
+1. Técnica natación — deporte más limitante. Foco en posición cuerpo, brazada, patada.
 2. Volumen aeróbico Z2 acumulado — construir base antes de añadir intensidad.
 3. Consistencia running — bajo impacto, cadencia >170ppm, evitar lesiones.
-4. Ciclismo — mayor volumen posible sin fatiga. Buen calentamiento motor aeróbico.
+4. Ciclismo — mayor volumen posible sin fatiga.
 5. Fuerza funcional 1x/semana — core, glúteos, movilidad cadera, isquios.
-6. Bricks bici+carrera — introducir progresivamente desde semana 4-5.
+6. Bricks bici+carrera — introducir progresivamente.` :
+phase === 'BUILD' ? `Intensidad progresiva: 70% Z1-Z2 + 30% Z3-Z4. Introducir series específicas y bricks regulares.
+Prioridades:
+1. Series Z4 running y bici — desarrollar umbral anaeróbico.
+2. Bricks semanales — adaptación fisiológica T2.
+3. Natación: técnica + algo de intensidad Z3.
+4. Fuerza: mantener 1x/semana, enfoque en potencia.
+5. Volumen similar a BASE pero con más calidad.` :
+phase === 'PEAK' ? `Simulaciones de carrera. Intensidad alta, volumen controlado (-10%). Cada sesión tiene propósito específico.
+Prioridades:
+1. Simulaciones de ritmo de carrera — pace objetivo olímpico.
+2. Bricks de calidad — ensayar T1/T2 mentalmente.
+3. Natación en aguas abiertas si posible.
+4. Reducir fuerza a mantenimiento.` :
+phase === 'TAPER' ? `TAPER: volumen -40-50%, mantener 1-2 estímulos cortos de calidad. Cero experimentos.
+Prioridades:
+1. Descanso, sueño 8h mínimo, hidratación.
+2. 1 sesión corta de calidad por deporte para mantener activación neuromuscular.
+3. Repasar logística de carrera — material, transiciones, nutrición.` :
+`Recuperación post-carrera. Reducir volumen 2 semanas, luego retomar BUILD ligero hacia objetivo B.`}
 
-DISTRIBUCIÓN SEMANAL BILBAO (8-10h):
-Natación 2-3x | Ciclismo 2-3x (1 larga Z2 + 1-2 cortas) | Running 2-3x (1 larga Z2 + 1 recuperación + 1 calidad) | Descanso 1 día | Brick 1x cuando carga lo permita
+DISTRIBUCIÓN SEMANAL BILBAO (${phase === 'BASE' ? '8-10h' : phase === 'BUILD' ? '10-12h' : phase === 'PEAK' ? '9-11h' : '5-7h'}):
+${phase === 'BASE' ? 'Natación 2-3x | Ciclismo 2-3x (1 larga Z2 + 1-2 cortas) | Running 2-3x (1 larga Z2 + 1 recuperación + 1 calidad) | Descanso 1 día | Brick 1x cuando carga lo permita' :
+phase === 'BUILD' ? 'Natación 2-3x (1 con series) | Ciclismo 2-3x (1 larga + 1 con intervalos) | Running 3x (1 series Z4 + 1 largo Z2 + 1 recuperación) | Brick 1-2x/semana | Fuerza 1x' :
+phase === 'PEAK' ? 'Natación 2x (1 simulación + 1 técnica) | Bici 2x (1 simulación ritmo carrera) | Running 2x (1 ritmo carrera + 1 suave) | Brick 1x | Sin fuerza heavy' :
+'Sesiones cortas y suaves. Sin obligación de completar nada. Escucha el cuerpo.'}
 
 PROGRESIÓN: +10% volumen máximo por semana. Semana de descarga cada 4 semanas (70% volumen). No añadir intensidad y volumen simultáneamente.
 
@@ -662,7 +724,10 @@ MÁXIMO 4 steps. Un solo step de cada tipo.
 
   if (activities.length > 0) {
     const DAYS_ES = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-    const sum = activities.slice(0,15).map(a => {
+    const sevenDaysAgo = new Date(); sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const recentActs = activities.filter(a => new Date(a.start_date) >= sevenDaysAgo);
+    const olderActs  = activities.filter(a => new Date(a.start_date) < sevenDaysAgo);
+    const sum = recentActs.slice(0, 10).map(a => {
       const sport = a.sport_type || a.type || '?';
       const dist = a.distance ? (a.distance/1000).toFixed(2)+'km' : '';
       const t = a.moving_time ? Math.round(a.moving_time/60)+'min' : '';
@@ -707,7 +772,10 @@ MÁXIMO 4 steps. Un solo step de cada tipo.
       const extras = [fcMedia, fcMax, ritmo, elev, cad, watts, rpe].filter(Boolean).join(' ');
       return `• ${dayName} ${date} [${sport}] ${a.name||''} ${dist} ${t} ${extras}`.trim();
     }).join('\n');
-    s += `\n\n--- ACTIVIDADES STRAVA RECIENTES (${activities.length} total) ---\n${sum}`;
+    const olderSummary = olderActs.length > 0
+      ? `\n(+ ${olderActs.length} actividades anteriores — resumen en MEMORIA PROGRESO)`
+      : '';
+    s += `\n\n--- ACTIVIDADES STRAVA ÚLTIMOS 7 DÍAS (${activities.length} total) ---\n${sum}${olderSummary}`;
   }
 
   // ── DYNAMIC FC ZONES FROM STRAVA ──
@@ -1380,7 +1448,7 @@ let weeklyMemory = []; // [{week, summary, fatigue, injuries, highlights}]
 let weekHistory = []; // [{week, dateRange, plan, summary, score}]
 
 function saveHistory() {
-  if (history.length > 40) history = history.slice(-40);
+  if (history.length > 20) history = history.slice(-20);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
   // Sync to GitHub (debounced)
   if (!savePending) {
@@ -2125,7 +2193,8 @@ function showTyping() {
 function removeTyping() { const t=document.getElementById('typing'); if(t)t.remove(); }
 
 async function callAPI(userMsg) {
-  const msgs = [...history.filter(m=>m.role), {role:'user',content:userMsg}];
+  // Solo los últimos 10 mensajes — el contexto relevante está en el system prompt (memoria semanal + Strava)
+  const msgs = [...history.filter(m=>m.role).slice(-10), {role:'user',content:userMsg}];
   const r = await fetch(CLAUDE_URL, {
     method:'POST', headers:authHeaders(),
     body: JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:3000,system:await buildSystem(),messages:msgs}),
