@@ -2316,7 +2316,7 @@ async function sendMessage() {
     addUserBubble(text);
   }
 
-  history.push({role:'user', content: userContent});
+  history.push({role:'user', content: typeof userContent === 'string' ? userContent : (text || 'Imagen adjunta')});
   saveHistory(); showTyping();
   try {
     const reply = await callAPI(userContent);
