@@ -7,7 +7,223 @@
     {
       "role": "user",
       "content": "empezamos la semana en bilbao"
+    },
+    {
+      "role": "assistant",
+      "content": "Perfecto Lucas, semana en Bilbao con todo el material disponible.\n\n**ANÁLISIS SEMANA ANTERIOR:**\nVeo progresión sólida en natación - 2km seguidos el viernes es un salto importante. Sin embargo, detecto dos problemas:\n- **Running cadencia baja**: 75-76ppm muy por debajo del objetivo >170ppm. Acorta zancada YA.\n- **Sueño inconsistente**: Score 39 el sábado te disparó FC reposo a 49ppm. Anoche recuperaste bien (score 93, FC 43ppm).\n\nTu fatiga está óptima (ACR 0.96), así que mantengo carga planificada. Estamos en **semana 10 de 27** - final de fase BASE, construyendo motor aeróbico antes del BUILD de mayo.\n\n**PLAN SEMANA 10:**\n🏊 **Lunes**: Natación técnica - consolidar ese progreso en distancia con calidad  \n🏃 **Martes**: Running Z2 corto - FOCO cadencia >175ppm  \n🚴 **Miércoles**: Bici larga Z2 - aprovecha que tienes energía fresca  \n🏊 **Jueves**: Natación series Z3 - primer trabajo de intensidad en agua  \n🏃 **Viernes**: Running fartlek suave - variaciones ritmo  \n🔄 **Sábado**: Brick bici+carrera - simular competición  \n😴 **Domingo**: Descanso activo + movilidad completa  \n\n¿Alguna molestia física o cambio en la planificación que deba saber?\n\nWEEK_PLAN_START\n[{\"day\":\"Lunes\",\"date\":\"2026-03-10\",\"sport\":\"Swim\",\"name\":\"Técnica y distancia\",\"description\":\"Consolidar progreso en 2km con técnica\",\"duration_min\":55,\"nutrition\":\"Agua antes y después\",\"steps\":[{\"type\":\"warmup\",\"distance_m\":400,\"zone\":1,\"desc\":\"Z1 libre suave\"},{\"type\":\"active\",\"distance_m\":1800,\"zone\":2,\"desc\":\"Z2 pull buoy continuo\"},{\"type\":\"interval\",\"reps\":4,\"distance_m\":100,\"on_zone\":3,\"rest_sec\":20,\"desc\":\"Z3 palas técnica\"},{\"type\":\"cooldown\",\"distance_m\":200,\"zone\":1,\"desc\":\"Z1 espalda relajado\"}]},{\"day\":\"Martes\",\"date\":\"2026-03-11\",\"sport\":\"Run\",\"name\":\"Z2 cadencia\",\"description\":\"Corregir cadencia baja urgente\",\"duration_min\":40,\"nutrition\":\"Agua + Evolytes en botella\",\"steps\":[{\"type\":\"warmup\",\"duration_min\":10,\"zone\":1,\"desc\":\"Calentamiento progresivo\"},{\"type\":\"active\",\"duration_min\":25,\"zone\":2,\"desc\":\"Z2 FOCO cadencia >175ppm\"},{\"type\":\"cooldown\",\"duration_min\":5,\"zone\":1,\"desc\":\"Vuelta calma\"}]},{\"day\":\"Miércoles\",\"date\":\"2026-03-12\",\"sport\":\"Ride\",\"name\":\"Base larga Z2\",\"description\":\"Volumen aeróbico aprovechando energía\",\"duration_min\":120,\"nutrition\":\"Agua + Evolytes + 1 gel Decathlon cada 45min\",\"steps\":[{\"type\":\"warmup\",\"duration_min\":15,\"zone\":1,\"desc\":\"Calentamiento progresivo\"},{\"type\":\"active\",\"duration_min\":95,\"zone\":2,\"desc\":\"Z2 continuo cadencia 88-92rpm\"},{\"type\":\"cooldown\",\"duration_min\":10,\"zone\":1,\"desc\":\"Vuelta calma\"}]},{\"day\":\"Jueves\",\"date\":\"2026-03-13\",\"sport\":\"Swim\",\"name\":\"Series Z3 primera vez\",\"description\":\"Introducir intensidad controlada en natación\",\"duration_min\":50,\"nutrition\":\"Agua antes y después\",\"steps\":[{\"type\":\"warmup\",\"distance_m\":500,\"zone\":1,\"desc\":\"Z1 libre técnico\"},{\"type\":\"interval\",\"reps\":8,\"distance_m\":100,\"on_zone\":3,\"rest_sec\":25,\"desc\":\"Z3 palas fuerte\"},{\"type\":\"active\",\"distance_m\":800,\"zone\":2,\"desc\":\"Z2 pull buoy recuperación\"},{\"type\":\"cooldown\",\"distance_m\":200,\"zone\":1,\"desc\":\"Z1 espalda suave\"}]},{\"day\":\"Viernes\",\"date\":\"2026-03-14\",\"sport\":\"Run\",\"name\":\"Fartlek suave\",\"description\":\"Variaciones ritmo controladas\",\"duration_min\":45,\"nutrition\":\"Agua + Evolytes en botella\",\"steps\":[{\"type\":\"warmup\",\"duration_min\":12,\"zone\":1,\"desc\":\"Calentamiento progresivo\"},{\"type\":\"interval\",\"reps\":5,\"on_min\":3,\"on_zone\":3,\"off_min\":2,\"off_zone\":1,\"desc\":\"Z3 cómodo + Z1 recuperación\"},{\"type\":\"cooldown\",\"duration_min\":10,\"zone\":1,\"desc\":\"Vuelta calma\"}]},{\"day\":\"Sábado\",\"date\":\"2026-03-15\",\"sport\":\"Ride\",\"name\":\"Brick bici+carrera\",\"description\":\"Simulacro transición T2\",\"duration_min\":105,\"nutrition\":\"Agua + Evolytes + gel cada 30-40min + gel extra en T2\",\"steps\":[{\"type\":\"warmup\",\"duration_min\":10,\"zone\":1,\"desc\":\"Calentamiento bici\"},{\"type\":\"active\",\"duration_min\":60,\"zone\":2,\"desc\":\"Z2 bici continuo\"},{\"type\":\"interval\",\"reps\":1,\"on_min\":30,\"on_zone\":2,\"off_min\":0,\"off_zone\":1,\"desc\":\"T2 + Z2 running brick\"},{\"type\":\"cooldown\",\"duration_min\":5,\"zone\":1,\"desc\":\"Vuelta calma\"}]},{\"day\":\"Domingo\",\"date\":\"2026-03-16\",\"sport\":null,\"name\":\"Descanso activo\",\"description\":\"Recuperación y movilidad\",\"duration_min\":0,\"steps\":[]}]\nWEEK_PLAN_END"
     }
   ],
-  "plan": []
+  "plan": [
+    {
+      "day": "Lunes",
+      "date": "2026-03-10",
+      "sport": "Swim",
+      "name": "Técnica y distancia",
+      "description": "Consolidar progreso en 2km con técnica",
+      "duration_min": 55,
+      "nutrition": "Agua antes y después",
+      "steps": [
+        {
+          "type": "warmup",
+          "distance_m": 400,
+          "zone": 1,
+          "desc": "Z1 libre suave"
+        },
+        {
+          "type": "active",
+          "distance_m": 1800,
+          "zone": 2,
+          "desc": "Z2 pull buoy continuo"
+        },
+        {
+          "type": "interval",
+          "reps": 4,
+          "distance_m": 100,
+          "on_zone": 3,
+          "rest_sec": 20,
+          "desc": "Z3 palas técnica"
+        },
+        {
+          "type": "cooldown",
+          "distance_m": 200,
+          "zone": 1,
+          "desc": "Z1 espalda relajado"
+        }
+      ]
+    },
+    {
+      "day": "Martes",
+      "date": "2026-03-11",
+      "sport": "Run",
+      "name": "Z2 cadencia",
+      "description": "Corregir cadencia baja urgente",
+      "duration_min": 40,
+      "nutrition": "Agua + Evolytes en botella",
+      "steps": [
+        {
+          "type": "warmup",
+          "duration_min": 10,
+          "zone": 1,
+          "desc": "Calentamiento progresivo"
+        },
+        {
+          "type": "active",
+          "duration_min": 25,
+          "zone": 2,
+          "desc": "Z2 FOCO cadencia >175ppm"
+        },
+        {
+          "type": "cooldown",
+          "duration_min": 5,
+          "zone": 1,
+          "desc": "Vuelta calma"
+        }
+      ]
+    },
+    {
+      "day": "Miércoles",
+      "date": "2026-03-12",
+      "sport": "Ride",
+      "name": "Base larga Z2",
+      "description": "Volumen aeróbico aprovechando energía",
+      "duration_min": 120,
+      "nutrition": "Agua + Evolytes + 1 gel Decathlon cada 45min",
+      "steps": [
+        {
+          "type": "warmup",
+          "duration_min": 15,
+          "zone": 1,
+          "desc": "Calentamiento progresivo"
+        },
+        {
+          "type": "active",
+          "duration_min": 95,
+          "zone": 2,
+          "desc": "Z2 continuo cadencia 88-92rpm"
+        },
+        {
+          "type": "cooldown",
+          "duration_min": 10,
+          "zone": 1,
+          "desc": "Vuelta calma"
+        }
+      ]
+    },
+    {
+      "day": "Jueves",
+      "date": "2026-03-13",
+      "sport": "Swim",
+      "name": "Series Z3 primera vez",
+      "description": "Introducir intensidad controlada en natación",
+      "duration_min": 50,
+      "nutrition": "Agua antes y después",
+      "steps": [
+        {
+          "type": "warmup",
+          "distance_m": 500,
+          "zone": 1,
+          "desc": "Z1 libre técnico"
+        },
+        {
+          "type": "interval",
+          "reps": 8,
+          "distance_m": 100,
+          "on_zone": 3,
+          "rest_sec": 25,
+          "desc": "Z3 palas fuerte"
+        },
+        {
+          "type": "active",
+          "distance_m": 800,
+          "zone": 2,
+          "desc": "Z2 pull buoy recuperación"
+        },
+        {
+          "type": "cooldown",
+          "distance_m": 200,
+          "zone": 1,
+          "desc": "Z1 espalda suave"
+        }
+      ]
+    },
+    {
+      "day": "Viernes",
+      "date": "2026-03-14",
+      "sport": "Run",
+      "name": "Fartlek suave",
+      "description": "Variaciones ritmo controladas",
+      "duration_min": 45,
+      "nutrition": "Agua + Evolytes en botella",
+      "steps": [
+        {
+          "type": "warmup",
+          "duration_min": 12,
+          "zone": 1,
+          "desc": "Calentamiento progresivo"
+        },
+        {
+          "type": "interval",
+          "reps": 5,
+          "on_min": 3,
+          "on_zone": 3,
+          "off_min": 2,
+          "off_zone": 1,
+          "desc": "Z3 cómodo + Z1 recuperación"
+        },
+        {
+          "type": "cooldown",
+          "duration_min": 10,
+          "zone": 1,
+          "desc": "Vuelta calma"
+        }
+      ]
+    },
+    {
+      "day": "Sábado",
+      "date": "2026-03-15",
+      "sport": "Ride",
+      "name": "Brick bici+carrera",
+      "description": "Simulacro transición T2",
+      "duration_min": 105,
+      "nutrition": "Agua + Evolytes + gel cada 30-40min + gel extra en T2",
+      "steps": [
+        {
+          "type": "warmup",
+          "duration_min": 10,
+          "zone": 1,
+          "desc": "Calentamiento bici"
+        },
+        {
+          "type": "active",
+          "duration_min": 60,
+          "zone": 2,
+          "desc": "Z2 bici continuo"
+        },
+        {
+          "type": "interval",
+          "reps": 1,
+          "on_min": 30,
+          "on_zone": 2,
+          "off_min": 0,
+          "off_zone": 1,
+          "desc": "T2 + Z2 running brick"
+        },
+        {
+          "type": "cooldown",
+          "duration_min": 5,
+          "zone": 1,
+          "desc": "Vuelta calma"
+        }
+      ]
+    },
+    {
+      "day": "Domingo",
+      "date": "2026-03-16",
+      "sport": null,
+      "name": "Descanso activo",
+      "description": "Recuperación y movilidad",
+      "duration_min": 0,
+      "steps": []
+    }
+  ]
 }
