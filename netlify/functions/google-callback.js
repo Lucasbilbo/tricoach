@@ -27,48 +27,34 @@ function post(url, data) {
 exports.handler = async (event) => {
   const { code, error } = event.queryStringParameters || {};
 
-  if (error) {
-    return {
-      statusCode: 302,
-      headers: { Location: '/?google_error=access_denied' }
-    };
-  }
-
-  if (!code) {
-    return { statusCode: 400, body: 'No code provided' };
-  }
+  if (error) return { statusCode: 302, headers: { Location: '/?google_error=access_denied' } };
+  if (!code)  return { statusCode: 400, body: 'No code provided' };
 
   try {
     const tokens = await post('https://oauth2.googleapis.com/token', {
       code,
-      client_id: process.env.GOOGLE_CLIENT_ID,
+      client_id:     process.env.GOOGLE_CLIENT_ID,
       client_secret: process.env.GOOGLE_CLIENT_SECRET,
-      redirect_uri: process.env.GOOGLE_REDIRECT_URI,
-      grant_type: 'authorization_code'
+      redirect_uri:  process.env.GOOGLE_REDIRECT_URI,
+      grant_type:    'authorization_code'
     });
 
     if (tokens.error) {
-      return {
-        statusCode: 302,
-        headers: { Location: `/?google_error=${tokens.error}` }
-      };
+      return { statusCode: 302, headers: { Location: `/?google_error=${tokens.error}` } };
     }
 
-    // Return tokens via URL fragment (never in query string)
+    // ✅ FIXED: tokens via URL fragment — no quedan en logs de servidor ni historial del navegador
     const fragment = encodeURIComponent(JSON.stringify({
-      access_token: tokens.access_token,
+      access_token:  tokens.access_token,
       refresh_token: tokens.refresh_token,
-      expires_in: tokens.expires_in
+      expires_in:    tokens.expires_in
     }));
 
     return {
       statusCode: 302,
-      headers: { Location: `/?google_tokens=${fragment}` }
+      headers: { Location: `/#google_tokens=${fragment}` }
     };
   } catch (e) {
-    return {
-      statusCode: 302,
-      headers: { Location: `/?google_error=token_exchange_failed` }
-    };
+    return { statusCode: 302, headers: { Location: `/?google_error=token_exchange_failed` } };
   }
 };

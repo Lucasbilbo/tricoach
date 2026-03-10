@@ -1,14 +1,24 @@
 const https = require('https');
 
-const CLIENT_ID     = process.env.STRAVA_CLIENT_ID;
-const CLIENT_SECRET = process.env.STRAVA_CLIENT_SECRET;
-const REFRESH_TOKEN = process.env.STRAVA_REFRESH_TOKEN;
+const CLIENT_ID       = process.env.STRAVA_CLIENT_ID;
+const CLIENT_SECRET   = process.env.STRAVA_CLIENT_SECRET;
+const REFRESH_TOKEN   = process.env.STRAVA_REFRESH_TOKEN;
+const FUNCTION_SECRET = process.env.TRICOACH_SECRET;
 
-const CORS = { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' };
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'Content-Type, x-tricoach-secret',
+  'Content-Type': 'application/json'
+};
+
+function checkAuth(event) {
+  const secret = event.headers['x-tricoach-secret'];
+  return !FUNCTION_SECRET || secret === FUNCTION_SECRET;
+}
 
 function httpsPost(hostname, path, data) {
   return new Promise((resolve) => {
-    const body = typeof data === 'string' ? data : new URLSearchParams(data).toString();
+    const body = new URLSearchParams(data).toString();
     const options = {
       hostname, path, method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(body) }
@@ -16,7 +26,7 @@ function httpsPost(hostname, path, data) {
     const req = https.request(options, (res) => {
       let d = '';
       res.on('data', c => d += c);
-      res.on('end', () => resolve({ status: res.statusCode, body: JSON.parse(d) }));
+      res.on('end', () => { try { resolve({ status: res.statusCode, body: JSON.parse(d) }); } catch { resolve({ status: res.statusCode, body: {} }); } });
     });
     req.on('error', e => resolve({ status: 500, body: { error: e.message } }));
     req.write(body);
@@ -33,7 +43,7 @@ function httpsGet(hostname, path, token) {
     const req = https.request(options, (res) => {
       let d = '';
       res.on('data', c => d += c);
-      res.on('end', () => resolve({ status: res.statusCode, body: JSON.parse(d) }));
+      res.on('end', () => { try { resolve({ status: res.statusCode, body: JSON.parse(d) }); } catch { resolve({ status: res.statusCode, body: [] }); } });
     });
     req.on('error', e => resolve({ status: 500, body: { error: e.message } }));
     req.end();
@@ -43,8 +53,11 @@ function httpsGet(hostname, path, token) {
 exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers: CORS, body: '' };
 
+  if (!checkAuth(event)) {
+    return { statusCode: 401, headers: CORS, body: JSON.stringify({ error: 'Unauthorized' }) };
+  }
+
   try {
-    // 1. Obtener access token
     const tokenRes = await httpsPost('www.strava.com', '/oauth/token', {
       client_id: CLIENT_ID,
       client_secret: CLIENT_SECRET,
@@ -57,8 +70,6 @@ exports.handler = async (event) => {
     }
 
     const accessToken = tokenRes.body.access_token;
-
-    // 2. Obtener actividades (últimas 100)
     const params = new URLSearchParams({ per_page: '100', page: '1' });
     const activitiesRes = await httpsGet('www.strava.com', `/api/v3/athlete/activities?${params}`, accessToken);
 

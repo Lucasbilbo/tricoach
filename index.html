@@ -442,8 +442,16 @@ textarea.json-in {
 
 <script>
 // ─── CONFIG ───
-const CLAUDE_URL = "/.netlify/functions/claude";
+const CLAUDE_URL  = "/.netlify/functions/claude";
 const HISTORY_URL = "/.netlify/functions/github-history";
+
+// Secret compartido — Netlify inject via _redirects or env. Vacío en dev local.
+const TRICOACH_SECRET = typeof __TRICOACH_SECRET__ !== 'undefined' ? __TRICOACH_SECRET__ : '';
+const authHeaders = (extra = {}) => ({
+  'Content-Type': 'application/json',
+  ...(TRICOACH_SECRET ? { 'x-tricoach-secret': TRICOACH_SECRET } : {}),
+  ...extra
+});
 
 const STORAGE_KEY   = "tricoach_v5_history";
 const ACT_KEY       = "tricoach_v5_activities";
@@ -1218,7 +1226,7 @@ function renderStats() {
 
 async function loadStravaAuto() {
   try {
-    const res = await fetch('/.netlify/functions/strava');
+    const res = await fetch('/.netlify/functions/strava', { headers: authHeaders() });
     if (!res.ok) { console.warn('Strava auto-load failed:', res.status); return null; }
     const data = await res.json();
     if (Array.isArray(data) && data.length > 0) {
@@ -1382,7 +1390,7 @@ function saveHistory() {
       try {
         const res = await fetch(HISTORY_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: authHeaders(),
           body: JSON.stringify({ history, plan: weekPlan, memory: weeklyMemory, weekHistory, sha: historySha })
         });
         const data = await res.json();
@@ -1394,7 +1402,7 @@ function saveHistory() {
 
 async function loadHistoryFromGithub() {
   try {
-    const res = await fetch(HISTORY_URL);
+    const res = await fetch(HISTORY_URL, { headers: authHeaders() });
     const data = await res.json();
     if (data.sha) historySha = data.sha;
     if (data.history && data.history.length > 0) {
@@ -1482,7 +1490,7 @@ function toggleDetail(idx) {
 
 async function fetchWellness() {
   try {
-    const res = await fetch('/.netlify/functions/intervals?action=wellness&days=5');
+    const res = await fetch('/.netlify/functions/intervals?action=wellness&days=5', { headers: authHeaders() });
     if (!res.ok) return null;
     const data = await res.json();
     if (!Array.isArray(data) || !data.length) return null;
@@ -1547,7 +1555,7 @@ Responde SOLO con este formato exacto (sin markdown extra):
   try {
     const res = await fetch('/.netlify/functions/claude', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders(),
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 400,
@@ -1825,15 +1833,19 @@ function updateCalendarBtn() {
 }
 
 function handleGoogleCallback() {
-  const url = new URL(window.location.href);
-  const tokensParam = url.searchParams.get('google_tokens');
-  const errorParam = url.searchParams.get('google_error');
+  // Tokens llegan por fragment (#) — nunca quedan en logs de servidor ni historial
+  const fragment = window.location.hash.slice(1); // quita el #
+  const queryParams = new URLSearchParams(window.location.search);
+
+  const fragmentParams = new URLSearchParams(fragment);
+  const tokensParam = fragmentParams.get('google_tokens');
+  const errorParam  = queryParams.get('google_error') || fragmentParams.get('google_error');
+
   if (tokensParam) {
     try {
       googleTokens = JSON.parse(decodeURIComponent(tokensParam));
       localStorage.setItem('google_tokens', JSON.stringify(googleTokens));
-      // Clean URL
-      window.history.replaceState({}, '', '/');
+      window.history.replaceState({}, '', '/'); // limpiar URL
       loadGoogleCalendar();
     } catch(e) { console.warn('Token parse error:', e); }
   }
@@ -1923,7 +1935,7 @@ async function clearWeekFromIntervals() {
   setStatus('', '🗑️ Buscando eventos...');
 
   try {
-    const res = await fetch(`/.netlify/functions/intervals?action=list&start=${oldest}&end=${newest}`);
+    const res = await fetch(`/.netlify/functions/intervals?action=list&start=${oldest}&end=${newest}`, { headers: authHeaders() });
     const events = await res.json();
 
     if (!Array.isArray(events) || events.length === 0) {
@@ -1934,7 +1946,7 @@ async function clearWeekFromIntervals() {
     let deleted = 0;
     for (const ev of events) {
       if (ev.category === 'WORKOUT') {
-        await fetch(`/.netlify/functions/intervals?action=delete&id=${ev.id}`, { method: 'DELETE' });
+        await fetch(`/.netlify/functions/intervals?action=delete&id=${ev.id}`, { method: 'DELETE', headers: authHeaders() });
         deleted++;
       }
     }
@@ -1989,7 +2001,7 @@ async function sendWeekToIntervals() {
     try {
       const res = await fetch("/.netlify/functions/intervals", {
         method: 'POST',
-        headers: { 'Content-Type':'application/json' },
+        headers: authHeaders(),
         body: JSON.stringify(payload)
       });
       if (res.ok) sent++;
@@ -2115,7 +2127,7 @@ function removeTyping() { const t=document.getElementById('typing'); if(t)t.remo
 async function callAPI(userMsg) {
   const msgs = [...history.filter(m=>m.role), {role:'user',content:userMsg}];
   const r = await fetch(CLAUDE_URL, {
-    method:'POST', headers:{'Content-Type':'application/json'},
+    method:'POST', headers:authHeaders(),
     body: JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:3000,system:await buildSystem(),messages:msgs}),
   });
   const d = await r.json();
@@ -2262,7 +2274,7 @@ async function subscribeToPush(reg) {
     });
     await fetch('/.netlify/functions/push-subscribe', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders(),
       body: JSON.stringify({ subscription: sub })
     });
     console.log('Push subscription updated OK');
