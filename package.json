@@ -1,6 +1,9 @@
 {
   "name": "tricoach-functions",
   "version": "1.0.0",
+  "scripts": {
+    "build": "node -e \"const fs=require('fs'); const ts=Date.now(); const sw=fs.readFileSync('sw.js','utf8').replace('__BUILD_TS__',ts); fs.writeFileSync('sw.js',sw); console.log('sw.js cache version:',ts);\""
+  },
   "dependencies": {
     "web-push": "^3.6.7"
   }

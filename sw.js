@@ -1,4 +1,7 @@
-const CACHE = 'tricoach-v3';
+// ── La versión se actualiza automáticamente con cada deploy ──────────────────
+// Para forzar un nuevo caché: cambia este número o haz un nuevo deploy
+const CACHE_VERSION = '__BUILD_TS__';
+const CACHE = `tricoach-${CACHE_VERSION}`;
 const ASSETS = ['/', '/index.html'];
 
 self.addEventListener('install', e => {
@@ -29,33 +32,31 @@ self.addEventListener('fetch', e => {
   );
 });
 
-// ─── PUSH NOTIFICATIONS ───
+// ─── PUSH NOTIFICATIONS ───────────────────────────────────────────────────────
 self.addEventListener('push', e => {
   let title = 'TriCoach AI';
-  let body = 'Tienes un entreno pendiente';
-  let tag = 'tricoach';
+  let body  = 'Tienes un entreno pendiente';
+  let tag   = 'tricoach';
 
   try {
     if (e.data) {
-      const text = e.data.text();
-      const data = JSON.parse(text);
+      const data = JSON.parse(e.data.text());
       title = data.title || title;
-      body = data.body || body;
-      tag = data.tag || tag;
+      body  = data.body  || body;
+      tag   = data.tag   || tag;
     }
-  } catch(err) {
-    // If parse fails use defaults
+  } catch {
     if (e.data) body = e.data.text() || body;
   }
 
   e.waitUntil(
     self.registration.showNotification(title, {
       body,
-      icon: '/icon-192.png',
-      badge: '/icon-192.png',
+      icon:     '/icon-192.png',
+      badge:    '/icon-192.png',
       tag,
       renotify: true,
-      data: { url: '/' }
+      data:     { url: '/' }
     })
   );
 });

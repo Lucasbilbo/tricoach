@@ -1,11 +1,37 @@
 [build]
+  command = "npm run build"
   functions = "netlify/functions"
   ignore = "git diff --quiet HEAD^ HEAD -- . ':(exclude)push-subscription.json' ':(exclude)history.json'"
 
+# ── Bloquear archivos sensibles ───────────────────────────────────────────────
+[[redirects]]
+  from = "/history.json"
+  to = "/404"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/push-subscription.json"
+  to = "/404"
+  status = 404
+  force = true
+
+# ── Security headers para toda la app ────────────────────────────────────────
 [[headers]]
   for = "/*"
   [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+# ── CORS solo para las functions (no para archivos estáticos) ────────────────
+[[headers]]
+  for = "/.netlify/functions/*"
+  [headers.values]
     Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Headers = "Content-Type, x-tricoach-secret"
+    Access-Control-Allow-Methods = "GET, POST, DELETE, OPTIONS"
 
 [functions."push-send"]
   schedule = "0 7,19 * * *"
