@@ -265,7 +265,11 @@ textarea#input:focus { border-color:rgba(0,229,255,.35); }
 }
 .send-btn:hover { transform:scale(1.06); }
 .send-btn:disabled { opacity:.35; cursor:not-allowed; transform:none; }
-
+.attach-btn { width:36px; height:36px; border-radius:10px; border:1px solid var(--border); background:var(--s2); color:var(--muted); cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all .2s; }
+.attach-btn:hover { border-color:var(--cyan); color:var(--cyan); }
+.img-preview { position:relative; margin-bottom:6px; display:inline-block; }
+.img-preview img { max-height:80px; border-radius:8px; border:1px solid var(--border); }
+.img-preview-remove { position:absolute; top:-6px; right:-6px; background:#ff4444; border:none; border-radius:50%; width:18px; height:18px; color:#fff; font-size:11px; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1; }
 /* MODAL */
 .modal-overlay {
   position:fixed; inset:0; background:rgba(0,0,0,.75);
@@ -428,13 +432,17 @@ textarea.json-in {
         <span class="chip" onclick="useChip(this)">💪 ¿Cómo fue ayer?</span>
       </div>
       <div class="input-row">
-        <textarea id="input" placeholder="Habla con tu coach..." rows="1"
-          onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
-        <button class="send-btn" id="sendBtn" onclick="sendMessage()">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
-          </svg>
-        </button>
+  <input type="file" id="imgInput" accept="image/*" style="display:none" onchange="handleImgSelect(event)">
+  <button class="attach-btn" onclick="document.getElementById('imgInput').click()" title="Adjuntar imagen">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+  </button>
+  <textarea id="input" placeholder="Habla con tu coach..." rows="1"
+    onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+  <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+    </svg>
+  </button>
       </div>
     </div>
   </div>
@@ -2258,17 +2266,60 @@ async function sendAutoMsg(text) {
   isLoading=false; document.getElementById('sendBtn').disabled=false;
 }
 
+let pendingImage = null;
+
+function handleImgSelect(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    pendingImage = { data: ev.target.result.split(',')[1], type: file.type };
+    // Show preview
+    let preview = document.getElementById('imgPreviewArea');
+    if (!preview) {
+      preview = document.createElement('div');
+      preview.id = 'imgPreviewArea';
+      preview.style.cssText = 'padding:0 0 4px 0;';
+      const inputArea = document.querySelector('.input-area');
+      inputArea.insertBefore(preview, inputArea.firstChild);
+    }
+    preview.innerHTML = '<div class="img-preview"><img src="' + ev.target.result + '"><button class="img-preview-remove" onclick="clearImage()">✕</button></div>';
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+function clearImage() {
+  pendingImage = null;
+  const p = document.getElementById('imgPreviewArea');
+  if (p) p.remove();
+}
+
 async function sendMessage() {
   const input = document.getElementById('input');
   const text = input.value.trim();
-  if (!text||isLoading) return;
+  if ((!text && !pendingImage) || isLoading) return;
   input.value=''; autoResize(input);
   isLoading=true; document.getElementById('sendBtn').disabled=true;
-  addUserBubble(text);
-  history.push({role:'user',content:text});
+
+  // Build user content
+  let userContent;
+  if (pendingImage) {
+    userContent = [
+      { type: 'image', source: { type: 'base64', media_type: pendingImage.type, data: pendingImage.data } },
+      { type: 'text', text: text || 'Analiza esta imagen' }
+    ];
+    addUserBubble((text || 'Analiza esta imagen') + ' 📎');
+    clearImage();
+  } else {
+    userContent = text;
+    addUserBubble(text);
+  }
+
+  history.push({role:'user', content: userContent});
   saveHistory(); showTyping();
   try {
-    const reply = await callAPI(text);
+    const reply = await callAPI(userContent);
     removeTyping();
     history.push({role:'assistant',content:reply});
     saveHistory(); updateMemLabel();
