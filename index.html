@@ -2242,7 +2242,7 @@ function showTyping() {
 function removeTyping() { const t=document.getElementById('typing'); if(t)t.remove(); }
 
 async function callAPI(userMsg) {
-  const msgs = [...history.filter(m=>m.role), {role:'user',content:userMsg}];
+  const msgs = [...history.filter(m=>m.role).map(m=>({...m, content: typeof m.content === 'string' ? m.content : (Array.isArray(m.content) ? m.content.find(b=>b.type==='text')?.text || '' : '')})), {role:'user',content:userMsg}];
   const r = await fetch(CLAUDE_URL, {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:3000,system:await buildSystem(),messages:msgs}),
