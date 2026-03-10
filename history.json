@@ -3,6 +3,10 @@
     {
       "role": "assistant",
       "content": "inicio"
+    },
+    {
+      "role": "user",
+      "content": "empezamos la semana en bilbao"
     }
   ],
   "plan": []
