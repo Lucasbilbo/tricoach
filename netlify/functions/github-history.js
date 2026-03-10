@@ -65,8 +65,8 @@ exports.handler = async (event) => {
 
     // POST — guardar historial
     if (event.httpMethod === 'POST') {
-      const { history, plan, sha } = JSON.parse(event.body);
-      const content = Buffer.from(JSON.stringify({ history, plan }, null, 2)).toString('base64');
+      const { history, plan, memory, weekHistory, sha } = JSON.parse(event.body);
+      const content = Buffer.from(JSON.stringify({ history, plan, memory, weekHistory }, null, 2)).toString('base64');
 
       const body = {
         message: `[skip ci] Update history ${new Date().toISOString().slice(0, 16)}`,

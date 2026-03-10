@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
 <link rel="manifest" href="/manifest.json">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -50,7 +50,30 @@ header {
 .logo-name { font-family:'Syne',sans-serif; font-weight:800; font-size:18px; letter-spacing:0.04em; text-transform:uppercase; line-height:1; }
 .logo-name span { color:var(--cyan); }
 .logo-tag { font-size:10px; color:var(--muted); letter-spacing:0.12em; text-transform:uppercase; }
-.header-right { margin-left:auto; display:flex; align-items:center; gap:7px; }
+.header-right { margin-left:auto; display:flex; align-items:center; gap:6px; }
+.hpill {
+  display:flex; align-items:center; gap:5px;
+  padding:5px 10px; border-radius:20px;
+  background:var(--s2); border:1px solid var(--s3);
+  font-size:11px; font-weight:600; color:var(--text);
+  cursor:pointer; white-space:nowrap;
+}
+.hpill:hover { border-color:var(--s4,#555); }
+.hpill .dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.hpill .dot-green { background:#69ff87; box-shadow:0 0 5px #69ff87aa; }
+.hpill .dot-red { background:#ff4444; box-shadow:0 0 5px #ff4444aa; }
+.hpill .dot-muted { background:var(--muted); }
+.hpill-goal { gap:6px; }
+.hpill-goal .goal-num { font-size:18px; font-weight:800; color:#69ff87; letter-spacing:-0.5px; line-height:1; }
+.hpill-goal .goal-text { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:0.8px; line-height:1.3; }
+.hpill-goal .goal-bar { width:36px; height:3px; background:var(--s3); border-radius:2px; margin-top:2px; }
+.hpill-goal .goal-bar-fill { height:3px; background:linear-gradient(90deg,#69ff87,#ffb74d); border-radius:2px; transition:width 0.3s; }
+.countdown-pill { display:flex; align-items:center; gap:7px; background:none; padding:0; cursor:default; }
+.countdown-weeks { font-size:22px; font-weight:800; color:#69ff87; line-height:1; letter-spacing:-1px; }
+.countdown-right { display:flex; flex-direction:column; justify-content:center; gap:3px; }
+.countdown-label { font-size:11px; color:var(--text); font-weight:600; letter-spacing:0.3px; line-height:1; }
+.countdown-bar { width:48px; height:3px; background:var(--s3); border-radius:2px; }
+.countdown-bar-fill { height:3px; background:linear-gradient(90deg,#69ff87,#ffb74d); border-radius:2px; transition:width 0.3s; }
 .hbtn {
   display:flex; align-items:center; gap:5px;
   padding:6px 11px; border-radius:8px;
@@ -308,6 +331,13 @@ textarea.json-in {
   .logo-tag{display:none;}
   .logo-mark{width:30px;height:30px;font-size:14px;}
   .mem-pill{display:none;}
+  .hpill span { display:none; }
+  .hpill { padding:6px 8px; gap:4px; }
+  .hpill svg { width:14px; height:14px; }
+  .countdown-weeks { font-size:18px; }
+  .countdown-label { font-size:10px; }
+  .countdown-bar { width:32px; }
+  .hpill-goal { gap:4px; padding:5px 8px; }
   .chat-col{padding-bottom:100px;}
   .input-area{padding:8px 0 6px;}
   #chat{padding-bottom:4px;}
@@ -339,17 +369,25 @@ textarea.json-in {
     <div class="logo-tag">+ Intervals.icu + Garmin</div>
   </div>
   <div class="header-right">
-    <button class="hbtn hbtn-strava" onclick="openModal('stravaModal')" id="stravaBtn" title="">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.599h4.172L10.463 0l-7 13.828h4.169"/></svg>
-      <span id="stravaLabel">Strava</span>
-    </button>
-    <button class="hbtn" id="calendarHeaderBtn" onclick="googleTokens ? loadGoogleCalendar() : connectGoogleCalendar()" title="Google Calendar" style="display:none;background:rgba(105,255,135,0.12);border:1px solid rgba(105,255,135,0.25);color:#69ff87;gap:4px;">
-      <span style="font-size:11px">📅</span>
-      <span id="calendarHeaderLabel">Cal.</span>
-    </button>
-    <div class="mem-pill">
-      <div class="mem-dot"></div>
-      <span id="memLabel">Memoria activa</span>
+    <!-- Objetivo countdown -->
+    <div class="hpill hpill-goal" id="countdownPill" title="Semanas para el objetivo A — julio 2026">
+      <div class="goal-num" id="countdownWeeks">--</div>
+      <div>
+        <div class="countdown-label">sem · julio</div>
+        <div class="goal-bar"><div class="goal-bar-fill" id="countdownFill" style="width:0%"></div></div>
+      </div>
+    </div>
+    <!-- Strava -->
+    <div class="hpill" id="stravaBtn" onclick="openModal('stravaModal')">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="#fc4c02"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.599h4.172L10.463 0l-7 13.828h4.169"/></svg>
+      <span style="font-size:11px;font-weight:600">Strava</span>
+      <div id="stravaDot" style="width:6px;height:6px;border-radius:50%;background:var(--muted)"></div>
+    </div>
+    <!-- Calendar -->
+    <div class="hpill" id="calendarHeaderBtn" onclick="googleTokens ? loadGoogleCalendar() : connectGoogleCalendar()" style="display:none">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="#4285f4"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V9h14v10zM7 11h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2z"/></svg>
+      <span style="font-size:11px;font-weight:600">Calendar</span>
+      <div id="calendarDot" style="width:6px;height:6px;border-radius:50%;background:var(--muted)"></div>
     </div>
   </div>
 </header>
@@ -404,21 +442,18 @@ textarea.json-in {
 
 <script>
 // ─── CONFIG ───
-const ATHLETE_ID    = "i524242";
-const INTERVALS_KEY = "2snw5gkbwutghni2cde17itbi";
-const INTERVALS_BASE = `https://intervals.icu/api/v1/athlete/${ATHLETE_ID}`;
-const AUTH_HEADER   = "Basic " + btoa("API_KEY:" + INTERVALS_KEY);
 const CLAUDE_URL = "/.netlify/functions/claude";
 const HISTORY_URL = "/.netlify/functions/github-history";
 
 const STORAGE_KEY   = "tricoach_v5_history";
 const ACT_KEY       = "tricoach_v5_activities";
 const PLAN_KEY      = "tricoach_v5_plan";
+const NOTES_KEY     = "tricoach_v5_daynotes";
 
-let history = [], activities = [], weekPlan = [], isLoading = false;
+let history = [], activities = [], weekPlan = [], dayNotes = {}, isLoading = false;
 
 // ─── SYSTEM PROMPT ───
-function buildSystem() {
+async function buildSystem() {
   const today = new Date();
   const todaySpain = new Date(today.toLocaleString('en-US', {timeZone: 'Europe/Madrid'}));
   const monday = new Date(todaySpain);
@@ -546,7 +581,7 @@ ANTES del JSON: una línea por día con emoji y razón:
 Emojis: 🏊 natación | 🚴 bici | 🏃 running | 💪 fuerza | 😴 descanso | 🔄 brick
 
 WEEK_PLAN_START
-[{"day":"Lunes","date":"YYYY-MM-DD","sport":"Run","name":"Nombre sesión","description":"Objetivo","duration_min":45,"steps":[{"type":"warmup","duration_min":10,"zone":1,"desc":"Calentamiento progresivo"},{"type":"active","duration_min":25,"zone":2,"desc":"Z2 continuo"},{"type":"cooldown","duration_min":10,"zone":1,"desc":"Vuelta calma"}]},{"day":"Martes","date":"YYYY-MM-DD","sport":null,"name":"Descanso","description":"Recuperación","duration_min":0,"steps":[]}]
+[{"day":"Lunes","date":"YYYY-MM-DD","sport":"Run","name":"Nombre sesión","description":"Objetivo","duration_min":45,"nutrition":"Agua + Evolytes en botella","steps":[{"type":"warmup","duration_min":10,"zone":1,"desc":"Calentamiento progresivo"},{"type":"active","duration_min":25,"zone":2,"desc":"Z2 continuo"},{"type":"cooldown","duration_min":10,"zone":1,"desc":"Vuelta calma"}]},{"day":"Martes","date":"YYYY-MM-DD","sport":null,"name":"Descanso","description":"Recuperación","duration_min":0,"steps":[]}]
 WEEK_PLAN_END
 
 REGLAS JSON:
@@ -557,6 +592,13 @@ REGLAS JSON:
   Intervalos: {"type":"interval","reps":5,"on_min":3,"on_zone":4,"off_min":2,"off_zone":1,"desc":"Z4 series 3min"}
 - desc: descriptivo y útil ("Z2 progresivo", "Series Z4 3min", "Rodaje suave")
 - zone/on_zone/off_zone: usar 1-5 (Z1 recuperación, Z2 aeróbico, Z3 tempo, Z4 umbral, Z5 VO2max)
+- nutrition: OBLIGATORIO en cada sesión con sport. String corto con estrategia de hidratación y nutrición:
+  <45min → "Solo agua"
+  45-75min → "Agua + Evolytes en botella"
+  >75min → "Agua + Evolytes + 1 gel Decathlon cada 45min durante esfuerzo"
+  Brick o sesión larga >2h → "Agua + Evolytes + gel cada 30-40min + gel extra en transición bici→carrera"
+  Natación → "Solo agua antes y después (no se come en el agua)"
+  Descanso → omitir campo nutrition
 
 REGLAS CRÍTICAS NATACIÓN (limitación protocolo Garmin):
 MÁXIMO 4 steps. Un solo step de cada tipo.
@@ -566,6 +608,25 @@ MÁXIMO 4 steps. Un solo step de cada tipo.
 - Cooldown: {"type":"cooldown","distance_m":200,"zone":1,"desc":"Z1 espalda"}
 - desc natación siempre: "ZONA + MATERIAL" — ejemplos: "Z2 pull buoy", "Z3 palas+pull", "Z1 aletas", "Z4 libre"
 - NUNCA dos steps del mismo tipo en natación`;
+
+  // Inject wellness data from Intervals
+  try {
+    const wellness = await fetchWellness();
+    if (wellness && wellness.length) {
+      const fmt = secs => secs ? `${Math.floor(secs/3600)}h${Math.round((secs%3600)/60)}min` : '—';
+      const wLines = wellness.map(d => {
+        const parts = [];
+        if (d.sleepSecs) parts.push(`Sueño: ${fmt(d.sleepSecs)}${d.sleepScore ? ` (score ${d.sleepScore})` : ''}${d.sleepQuality ? ` calidad ${d.sleepQuality}` : ''}`);
+        if (d.hrv) parts.push(`HRV: ${d.hrv}ms`);
+        if (d.restingHR) parts.push(`FC reposo: ${d.restingHR}bpm`);
+        if (d.stress) parts.push(`Estrés: ${d.stress}/100`);
+        if (d.fatigue) parts.push(`Fatiga: ${d.fatigue}/10`);
+        if (d.bodyBattery) parts.push(`Body Battery: ${d.bodyBattery}%`);
+        return `  ${d.date}: ${parts.join(' | ')}`;
+      }).join('\n');
+      s += `\n\nDATO BIENESTAR GARMIN (últimos días):\n${wLines}\nUSA ESTOS DATOS para ajustar la intensidad del plan. Si sueño score <60 o <6h → reducir intensidad ese día. Menciona explícitamente el estado del sueño al planificar.`;
+    }
+  } catch(e) {}
 
   // Inject Google Calendar events
   if (calendarEvents && calendarEvents.length > 0) {
@@ -677,7 +738,10 @@ MÁXIMO 4 steps. Un solo step de cada tipo.
   if (weekPlan && weekPlan.length > 0) {
     const planWorkouts = weekPlan.filter(d => d.sport);
     const planDates = planWorkouts.map(d => d.date);
-    const planSummary = planWorkouts.map(d => `• ${d.day} ${d.date} [${d.sport}] ${d.name} ${d.duration_min}min`).join('\n');
+    const planSummary = planWorkouts.map(d => {
+      const note = dayNotes[d.date] ? ` [NOTA: ${dayNotes[d.date]}]` : '';
+      return `• ${d.day} ${d.date} [${d.sport}] ${d.name} ${d.duration_min}min${note}`;
+    }).join('\n');
 
     // Match Strava activities to plan dates
     const now = new Date();
@@ -1044,16 +1108,16 @@ function renderStats() {
       const wks = trendSorted.filter(w => w[sp.key].filter(a=>a.average_heartrate&&a.distance>500).length > 0);
       if (wks.length < 3) return `<div style="margin-bottom:12px"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">${sp.label}</div><div style="font-size:10px;color:var(--muted)">Necesitas más sesiones con FC registrada</div></div>`;
 
-      const data = wks.map(w => {
+      const data = wks.slice().reverse().map(w => {
         const acts = w[sp.key].filter(a=>a.average_heartrate&&a.distance>500);
         const avgFC = acts.reduce((s,a)=>s+a.average_heartrate,0)/acts.length;
         const avgEffort = acts.reduce((s,a)=>s+sp.effortFn(a),0)/acts.length;
         return { lbl: w.monday.getDate()+'/'+(w.monday.getMonth()+1), fc: Math.round(avgFC), effort: avgEffort, monday: w.monday };
       });
 
-      // Trend: compare first 3 weeks vs last 3 weeks
-      const firstFC = data.slice(0,3).reduce((s,d)=>s+d.fc,0)/3;
-      const lastFC = data.slice(-3).reduce((s,d)=>s+d.fc,0)/3;
+      // Trend: data is newest-first, so slice(-3) = oldest, slice(0,3) = newest
+      const firstFC = data.slice(-3).reduce((s,d)=>s+d.fc,0)/3; // oldest weeks
+      const lastFC = data.slice(0,3).reduce((s,d)=>s+d.fc,0)/3;  // newest weeks
       const fcDiff = Math.round(lastFC - firstFC);
       const improving = fcDiff < -1;
       const stable = Math.abs(fcDiff) <= 1;
@@ -1144,6 +1208,11 @@ function renderStats() {
       <div class="an-title">❤️ Eficiencia cardiovascular</div>
       ${cardioEffHtml}
     </div>
+    <div class="an-section">
+      <div class="an-title">🏁 Simulación olímpico</div>
+      <div id="simResult" style="font-size:11px;color:var(--muted);margin-bottom:8px">Pulsa para estimar tu tiempo actual en distancia olímpica basado en tus datos Strava.</div>
+      <button onclick="runOlympicSim()" style="width:100%;padding:8px;background:linear-gradient(135deg,var(--cyan),#0099cc);color:#000;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">🏁 Simular mi olímpico</button>
+    </div>
   </div>`;
 }
 
@@ -1172,7 +1241,13 @@ async function loadStravaAuto() {
       if (btn) btn.title = `Última sync: ${hm} · ${data.length} actividades totales`;
       return newActs;
     }
-  } catch(e) { console.warn('Strava auto-load error:', e); }
+  } catch(e) {
+    console.warn('Strava auto-load error:', e);
+    const btn2 = document.getElementById('stravaBtn');
+    if (btn2) btn2.title = 'Strava — error. Pulsa para reconectar.';
+    const dot2 = document.getElementById('stravaDot');
+    if (dot2) { dot2.style.background = '#ff4444'; dot2.style.boxShadow = '0 0 4px #ff4444'; }
+  }
   return null;
 }
 
@@ -1180,6 +1255,7 @@ async function init() {
   try { history   = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { history = []; }
   try { activities= JSON.parse(localStorage.getItem(ACT_KEY))     || []; } catch { activities = []; }
   try { weekPlan  = JSON.parse(localStorage.getItem(PLAN_KEY))    || []; } catch { weekPlan = []; }
+  try { dayNotes  = JSON.parse(localStorage.getItem(NOTES_KEY))   || {}; } catch { dayNotes = {}; }
 
   // Intenta cargar desde GitHub (sobreescribe localStorage si hay datos más recientes)
   // Load Google tokens
@@ -1194,13 +1270,20 @@ async function init() {
     if (googleTokens) {
       hBtn.style.display = 'flex';
       const lbl = document.getElementById('calendarHeaderLabel');
-      if (lbl) lbl.textContent = calendarEvents.length > 0 ? `● ${calendarEvents.length} ev.` : '● ...';
+      if (hBtn) hBtn.title = `Calendar ✓ · ${calendarEvents.length} eventos`;
+      const cDot = document.getElementById('calendarDot');
+      if (cDot) { cDot.style.background = '#69ff87'; cDot.style.boxShadow = '0 0 4px #69ff87'; }
+      const calDot = document.getElementById('calendarDot');
+      if (calDot) calDot.className = 'dot dot-green';
     } else {
       hBtn.style.display = 'flex';
-      hBtn.style.background = 'rgba(100,100,100,0.15)';
-      hBtn.style.borderColor = 'rgba(100,100,100,0.3)';
-      hBtn.style.color = 'var(--muted)';
-      document.getElementById('calendarHeaderLabel').textContent = 'Cal.';
+      hBtn.style.background = '';
+      hBtn.style.borderColor = '';
+      hBtn.style.color = '';
+      const calBtnErr = document.getElementById('calendarHeaderBtn');
+      if (calBtnErr) calBtnErr.title = 'Calendar — no conectado. Pulsa para conectar.';
+      const cDotErr = document.getElementById('calendarDot');
+      if (cDotErr) { cDotErr.style.background = '#ff4444'; cDotErr.style.boxShadow = '0 0 4px #ff4444'; }
     }
   }
 
@@ -1212,6 +1295,11 @@ async function init() {
   ]);
   updateMemLabel(); updateMobileBar();
   renderSidebar();
+  updateCountdown();
+  // Show one-time notification banner if not yet decided
+  if ('Notification' in window && Notification.permission === 'default') {
+    setTimeout(showNotifBanner, 2000);
+  }
 
   if (history.length === 0) {
     // First visit — show welcome without consuming tokens
@@ -1343,7 +1431,8 @@ function updateMobileBar() {
 }
 
 function updateMemLabel() {
-  document.getElementById('memLabel').textContent = history.length > 1 ? `${history.length} msgs` : 'Memoria activa';
+  const el = document.getElementById('memLabel');
+  if (el) el.textContent = history.length > 1 ? `${history.length} msgs` : 'Memoria activa';
 }
 
 // ─── MODALS ───
@@ -1391,6 +1480,134 @@ function toggleDetail(idx) {
   el.classList.toggle('open');
 }
 
+async function fetchWellness() {
+  try {
+    const res = await fetch('/.netlify/functions/intervals?action=wellness&days=5');
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!Array.isArray(data) || !data.length) return null;
+    // Return last 3 days with data, newest first
+    const qualityLabel = q => q === 1 ? 'excelente' : q === 2 ? 'buena' : q === 3 ? 'regular' : q === 4 ? 'mala' : '';
+    return data.slice(-4).reverse().map(d => ({
+      date: d.id,
+      sleepSecs: d.sleepSecs,
+      sleepScore: d.sleepScore,
+      sleepQuality: d.sleepQuality ? qualityLabel(d.sleepQuality) : null,
+      hrv: d.hrv,
+      restingHR: d.restingHR,
+      stress: d.stress,
+      fatigue: d.fatigue,
+      bodyBattery: d.bodyBattery
+    })).filter(d => d.sleepSecs || d.restingHR);
+  } catch(e) {
+    console.warn('Wellness fetch error:', e);
+    return null;
+  }
+}
+
+async function runOlympicSim() {
+  const el = document.getElementById('simResult');
+  if (!el) return;
+  el.innerHTML = '<span style="color:var(--cyan)">⏳ Analizando tus datos...</span>';
+
+  // Gather last 8 weeks of data per sport
+  const now = new Date();
+  const recentActs = activities.filter(a => (now - new Date(a.start_date)) < 56 * 86400000);
+
+  const runs = recentActs.filter(a => a.type === 'Run' && a.distance > 1000 && a.moving_time > 0);
+  const rides = recentActs.filter(a => a.type === 'Ride' && a.distance > 5000 && a.moving_time > 0);
+  const swims = recentActs.filter(a => a.type === 'Swim' && a.distance > 200 && a.moving_time > 0);
+
+  const avgPace = arr => arr.length ? arr.reduce((s,a) => s + a.moving_time / (a.distance/1000), 0) / arr.length : 0;
+  const avgSwimPace = arr => arr.length ? arr.reduce((s,a) => s + a.moving_time / (a.distance/100), 0) / arr.length : 0;
+  const avgSpeed = arr => arr.length ? arr.reduce((s,a) => s + (a.distance/1000) / (a.moving_time/3600), 0) / arr.length : 0;
+
+  const runPaceSec = avgPace(runs);   // sec/km
+  const rideSpeedKmh = avgSpeed(rides); // km/h
+  const swimPaceSec = avgSwimPace(swims); // sec/100m
+
+  // Build prompt for Claude
+  const prompt = `Eres TriCoach analizando el rendimiento actual de Lucas para estimar su tiempo en un triatlón olímpico (1500m natación + 40km bici + 10km carrera).
+
+DATOS REALES ÚLTIMAS 8 SEMANAS (Strava):
+- Natación: ${swims.length} sesiones. Pace medio: ${swimPaceSec > 0 ? Math.floor(swimPaceSec/60)+':'+(Math.round(swimPaceSec%60)).toString().padStart(2,'0')+'/100m' : 'sin datos'}
+- Bici: ${rides.length} sesiones. Velocidad media: ${rideSpeedKmh > 0 ? rideSpeedKmh.toFixed(1)+'km/h' : 'sin datos'}
+- Running: ${runs.length} sesiones. Pace medio: ${runPaceSec > 0 ? Math.floor(runPaceSec/60)+':'+(Math.round(runPaceSec%60)).toString().padStart(2,'0')+'/km' : 'sin datos'}
+
+IMPORTANTE: Estos son datos de entrenamiento, no de carrera. Ajusta para esfuerzo de competición (+5-10% intensidad). Considera que Lucas lleva solo ~3 meses entrenando triatlón.
+
+Responde SOLO con este formato exacto (sin markdown extra):
+🏊 Natación 1500m: X:XX min
+🚴 Bici 40km: X:XX h
+🏃 Running 10km: XX:XX min
+⏱️ Transiciones: ~X min
+🏁 TOTAL ESTIMADO: X:XX h
+📊 Contexto: [1-2 frases sobre el nivel actual y qué disciplina tiene más margen de mejora]`;
+
+  try {
+    const res = await fetch('/.netlify/functions/claude', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 400,
+        system: 'Eres TriCoach. Responde solo con el formato indicado, sin markdown extra.',
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content?.[0]?.text || data.error || 'Error al calcular';
+    el.innerHTML = '<div style="line-height:1.8;font-size:12px;color:var(--text)">' + text.split('\n').join('<br>') + '</div>';
+  } catch(e) {
+    el.innerHTML = '<span style="color:#ff4444">Error al conectar con el coach</span>';
+  }
+}
+
+function updateCountdown() {
+  const now = new Date();
+  const targetA = new Date('2026-07-05'); // julio 2026 objetivo A
+  const seasonStart = new Date('2026-01-05'); // inicio temporada
+  const totalDays = (targetA - seasonStart) / 86400000;
+  const elapsed = (now - seasonStart) / 86400000;
+  const daysLeft = Math.max(0, Math.ceil((targetA - now) / 86400000));
+  const weeksLeft = Math.ceil(daysLeft / 7);
+  const pct = Math.min(100, Math.round((elapsed / totalDays) * 100));
+
+  const wEl = document.getElementById('countdownWeeks');
+  const fEl = document.getElementById('countdownFill');
+  if (!wEl) return;
+  wEl.textContent = weeksLeft > 0 ? weeksLeft : '🏁';
+  if (fEl) fEl.style.width = pct + '%';
+
+  if (weeksLeft <= 4) wEl.style.color = '#ff4444';
+  else if (weeksLeft <= 8) wEl.style.color = '#ffb74d';
+  else wEl.style.color = '#69ff87';
+}
+
+function saveNote(date, val) {
+  if (val.trim()) dayNotes[date] = val.trim();
+  else delete dayNotes[date];
+  localStorage.setItem(NOTES_KEY, JSON.stringify(dayNotes));
+}
+
+function toggleNoteInput(date, el) {
+  const existing = document.getElementById('note-input-' + date);
+  if (existing) { existing.remove(); return; }
+  const div = document.createElement('div');
+  div.id = 'note-input-' + date;
+  div.style.cssText = 'padding:6px 8px 8px;background:var(--s2);border-top:1px solid var(--s3);margin:0';
+  const currentNote = dayNotes[date] || '';
+  div.innerHTML = '<div style="display:flex;gap:6px;align-items:flex-start">'
+    + '<textarea id="note-ta-' + date + '" placeholder="Nota del día..." style="flex:1;background:var(--s3);color:var(--text);border:none;border-radius:6px;padding:5px 7px;font-size:16px;resize:none;outline:none;box-sizing:border-box" rows="2">' + currentNote + '</textarea>'
+    + '<button onclick="saveNote(\'' + date + '\', document.getElementById(\'note-ta-' + date + '\').value); renderSidebar();" style="background:#69ff87;color:#000;border:none;border-radius:5px;padding:5px 8px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap">OK</button>'
+    + '<button onclick="document.getElementById(\'note-input-' + date + '\').remove()" style="background:var(--s3);color:var(--muted);border:none;border-radius:5px;padding:5px 7px;font-size:11px;cursor:pointer">✕</button>'
+    + '</div>';
+  // Insert right after the week-day row, not floating
+  const dayRow = el.closest('.week-day');
+  dayRow.insertAdjacentElement('afterend', div);
+  document.getElementById('note-ta-' + date).focus();
+}
+
 function renderSidebar() {
   const el = document.getElementById('sidebarContent');
   const actCount = document.getElementById('actCount');
@@ -1421,18 +1638,27 @@ function renderSidebar() {
       const stepsHtml = steps.length > 0
         ? steps.map((s,i) => `<div class="wd-detail-step"><span class="wd-detail-step-num">${i+1}.</span><span>${s.desc || s.type || ''} ${s.duration_sec ? Math.round(s.duration_sec/60)+'min' : ''} ${s.distance_m ? s.distance_m+'m' : ''}</span></div>`).join('')
         : `<div style="color:var(--muted);font-size:11px">${day.description || 'Sin detalle'}</div>`;
+      const nutritionHtml = day.nutrition
+        ? `<div style="margin:6px 0 2px;padding:6px 8px;background:rgba(0,229,255,0.06);border-radius:6px;border-left:2px solid var(--cyan)">
+            <span style="font-size:10px;color:var(--cyan);font-weight:600;text-transform:uppercase;letter-spacing:0.5px">💧 Nutrición</span>
+            <div style="font-size:11px;color:var(--text);margin-top:2px">${day.nutrition}</div>
+          </div>` : '';
       detailHtml = `<div class="wd-detail" id="detail-${idx}">
         <div class="wd-detail-meta">${tagsHtml}</div>
         ${stepsHtml}
+        ${nutritionHtml}
       </div>`;
     }
+    const note = dayNotes[day.date] || '';
+    const noteHtml = note ? `<div style="padding:4px 10px 6px;font-size:11px;color:#ffb74d;background:var(--s2);border-top:1px solid var(--s3)">📝 ${note}</div>` : '';
     html += `<div class="week-day" onclick="${day.sport ? `toggleDetail(${idx})` : ''}">
       <span class="wd-day">${ds}</span>
       ${day.sport
         ? `<span class="wd-sport ${sc}">${em}</span><span class="wd-name">${day.name}</span><span style="font-size:10px;color:var(--muted);flex-shrink:0">${day.duration_min}min</span>`
         : `<span style="color:var(--muted);font-size:11px;flex:1">Descanso</span>`
       }
-    </div>${detailHtml}`;
+      <button onclick="event.stopPropagation();toggleNoteInput('${day.date}', this)" style="background:none;border:none;cursor:pointer;font-size:13px;padding:0 0 0 6px;opacity:${note ? '1' : '0.4'}" title="Nota del día">${note ? '📝' : '✏️'}</button>
+    </div>${noteHtml}${detailHtml}`;
   });
 
   html += `
@@ -1442,6 +1668,7 @@ function renderSidebar() {
     <button class="send-week-btn" style="background:#c0392b;margin-top:6px;font-size:12px;" onclick="clearWeekFromIntervals()">
       🗑️ Limpiar semana en Intervals
     </button>
+
 
     <div class="week-status" id="weekStatus"></div>
   </div>`;
@@ -1572,7 +1799,9 @@ function setCalendarStatus(status) {
     if (hBtn) { hBtn.style.background = 'rgba(100,100,100,0.15)'; hBtn.style.borderColor = 'rgba(100,100,100,0.3)'; hBtn.style.color = 'var(--muted)'; }
   } else if (status === 'ok') {
     if (btn) { btn.textContent = `✅ Google Cal. (${calendarEvents.length} ev.)`; btn.style.background = 'rgba(105,255,135,0.15)'; btn.style.color = '#69ff87'; }
-    if (hLabel) hLabel.textContent = `● ${calendarEvents.length} ev.`;
+    if (hBtn) hBtn.title = `Calendar ✓ · ${calendarEvents.length} eventos`;
+    const cDot2 = document.getElementById('calendarDot');
+    if (cDot2) { cDot2.style.background = '#69ff87'; cDot2.style.boxShadow = '0 0 4px #69ff87'; }
     if (hBtn) { hBtn.style.background = 'rgba(105,255,135,0.12)'; hBtn.style.borderColor = 'rgba(105,255,135,0.3)'; hBtn.style.color = '#69ff87'; }
   } else if (status === 'error') {
     if (btn) { btn.textContent = '🔴 Calendar — pulsa para reconectar'; btn.style.background = 'rgba(255,68,68,0.15)'; btn.style.color = '#ff4444'; btn.onclick = () => connectGoogleCalendar(); }
@@ -1778,7 +2007,6 @@ async function sendWeekToIntervals() {
   } else if (sent > 0) {
     setBtnText(`⚠️ ${sent} enviados, ${failed} fallaron`, false);
     setStatus('err', 'Algunos no se enviaron. Inténtalo de nuevo.');
-    btn.disabled = false;
   } else {
     setBtnText('⌚ Enviar semana al Garmin', false);
     setStatus('err', '❌ Error de conexión. ¿Estás en Netlify?');
@@ -1843,7 +2071,7 @@ function renderText(t) {
     .replace(/\*(.*?)\*/g,'<em>$1</em>')
     .replace(/###?\s*(.*)/g,'<h3>$1</h3>')
     .replace(/^[-•]\s+(.*)/gm,'<li>$1</li>')
-    .replace(/(<li>[\s\S]*?<\/li>)/g,'<ul>$1</ul>')
+    .replace(/(<li>.*<\/li>)(\n<li>.*<\/li>)*/g, match => `<ul>${match.replace(/\n/g,'')}</ul>`)
     .replace(/\n{2,}/g,'</p><p>')
     .replace(/\n/g,'<br>');
 }
@@ -1888,7 +2116,7 @@ async function callAPI(userMsg) {
   const msgs = [...history.filter(m=>m.role), {role:'user',content:userMsg}];
   const r = await fetch(CLAUDE_URL, {
     method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:3000,system:buildSystem(),messages:msgs}),
+    body: JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:3000,system:await buildSystem(),messages:msgs}),
   });
   const d = await r.json();
   return d.content?.map(b=>b.text||'').join('') || 'Error al procesar.';
@@ -1955,9 +2183,92 @@ function switchMobileTab(tab) {
   if (tab==='stats') { renderStats(); const s=document.getElementById('mobileSidebarStats'); if(s) s.innerHTML=document.getElementById('statsContent').innerHTML; }
 }
 
-// Register service worker
+// Register service worker + setup notifications
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').catch(e => console.warn('SW error:', e));
+  navigator.serviceWorker.register('/sw.js')
+    .then(reg => {
+      window._swReg = reg;
+      setupNotifications(reg);
+    })
+    .catch(e => console.warn('SW error:', e));
+}
+
+const VAPID_PUBLIC_KEY = 'BHppJhRdWD4VYbpO4F1rcS8C3hkDpVBGsI2Ds_7oGcW4i7_spFbCL6LewO-TjbJ29st0cKLynpbhUFb3x0epHMs';
+
+async function setupNotifications(reg) {
+  // Only auto-subscribe if already granted (iOS requires user gesture for first request)
+  if (Notification.permission === 'granted') {
+    await subscribeToPush(reg);
+    updateNotifBtn();
+  }
+  updateNotifBtn();
+}
+
+function showNotifBanner() {
+  if (document.getElementById('notifBanner')) return;
+  const banner = document.createElement('div');
+  banner.id = 'notifBanner';
+  banner.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,0.4);max-width:320px;width:90%';
+  const yesBtn = document.createElement('button');
+  yesBtn.textContent = 'Sí';
+  yesBtn.style.cssText = 'background:#69ff87;color:#000;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer';
+  yesBtn.onclick = () => { requestNotifPermission(); banner.remove(); };
+  const noBtn = document.createElement('button');
+  noBtn.textContent = '✕';
+  noBtn.style.cssText = 'background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:0 4px';
+  noBtn.onclick = () => banner.remove();
+  const txt = document.createElement('span');
+  txt.style.cssText = 'font-size:13px;color:var(--text);flex:1';
+  txt.textContent = '🔔 ¿Activar notificaciones del entreno?';
+  banner.appendChild(txt);
+  banner.appendChild(yesBtn);
+  banner.appendChild(noBtn);
+  document.body.appendChild(banner);
+}
+
+function updateNotifBtn() {
+  const btn = document.getElementById('notifBtn');
+  if (!btn) return;
+  if (Notification.permission === 'granted') {
+    btn.textContent = '🔔 Notificaciones activas';
+    btn.style.background = 'rgba(105,255,135,0.1)';
+    btn.style.color = '#69ff87';
+    btn.style.borderColor = 'rgba(105,255,135,0.3)';
+  } else if (Notification.permission === 'denied') {
+    btn.textContent = '🔕 Notificaciones bloqueadas';
+    btn.style.color = 'var(--muted)';
+  }
+}
+
+async function requestNotifPermission() {
+  if (Notification.permission === 'granted') return;
+  const perm = await Notification.requestPermission();
+  if (perm === 'granted' && window._swReg) {
+    await subscribeToPush(window._swReg);
+  }
+  updateNotifBtn();
+}
+
+async function subscribeToPush(reg) {
+  try {
+    // Always unsubscribe first to force fresh subscription with current VAPID keys
+    const existing = await reg.pushManager.getSubscription();
+    if (existing) await existing.unsubscribe();
+
+    const keyBytes = Uint8Array.from(atob(VAPID_PUBLIC_KEY.replace(/-/g,'+').replace(/_/g,'/')), c => c.charCodeAt(0));
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: keyBytes
+    });
+    await fetch('/.netlify/functions/push-subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subscription: sub })
+    });
+    console.log('Push subscription updated OK');
+  } catch(e) {
+    console.warn('Push subscribe error:', e);
+  }
 }
 
 init();
