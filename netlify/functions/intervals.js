@@ -1,7 +1,7 @@
 const https = require('https');
 
-const ATHLETE_ID = "i524242";
-const INTERVALS_KEY = "2snw5gkbwutghni2cde17itbi";
+const ATHLETE_ID = process.env.INTERVALS_ATHLETE_ID;
+const INTERVALS_KEY = process.env.INTERVALS_API_KEY;
 const auth = Buffer.from(`API_KEY:${INTERVALS_KEY}`).toString('base64');
 
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' };
