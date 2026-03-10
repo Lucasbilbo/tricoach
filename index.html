@@ -446,7 +446,7 @@ const CLAUDE_URL  = "/.netlify/functions/claude";
 const HISTORY_URL = "/.netlify/functions/github-history";
 
 // Secret compartido — Netlify inject via _redirects or env. Vacío en dev local.
-const TRICOACH_SECRET = typeof __TRICOACH_SECRET__ !== 'undefined' ? __TRICOACH_SECRET__ : '';
+const TRICOACH_SECRET = 'tricoach-x7k9m2p4q8r3';
 const authHeaders = (extra = {}) => ({
   'Content-Type': 'application/json',
   ...(TRICOACH_SECRET ? { 'x-tricoach-secret': TRICOACH_SECRET } : {}),
