@@ -23,6 +23,10 @@
     {
       "role": "user",
       "content": "test"
+    },
+    {
+      "role": "assistant",
+      "content": "¿Qué necesitas, Lucas? ¿Hay algo específico del plan de esta semana que quieres revisar o ajustar?\n\nRecuerda que hoy toca **natación técnica** - 2.4km con foco en consolidar esos 2km seguidos que lograste el viernes. Pull buoy para la parte larga y unas series cortas con palas para trabajar técnica.\n\n¿Todo listo para empezar la semana?"
     }
   ],
   "plan": [
